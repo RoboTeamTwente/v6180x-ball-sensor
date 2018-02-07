@@ -80,7 +80,7 @@ void Sample_SimpleRanging(void) {
        VL6180x_RangePollMeasurement(myDev, &Range);
        if (Range.errorStatus == 0 ) {
            //MyDev_ShowRange(myDev, Range.range_mm); // your code display range in mm
-    	   uprintf("%ld\n\r",Range.range_mm);
+    	   uprintf("range: %ld\n\r",Range.range_mm);
     	   range = Range.range_mm;
        }
        else {
@@ -158,6 +158,8 @@ int main(void)
 	  //HAL_Delay(1);
 
   //}
+  //uint8_t text[] = "test\r\n";
+  //HAL_UART_Transmit(&huart2, text, sizeof(text)-1,20);
   Sample_SimpleRanging();
   /* USER CODE END 3 */
 
