@@ -5,7 +5,7 @@
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
+  * USER CODE END. Other portions of this file, whether
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
@@ -41,6 +41,8 @@
 #include "i2c.h"
 #include "usart.h"
 #include "gpio.h"
+#include "PuttyInterface.h"
+#include "vl6180x_api.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -50,7 +52,8 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+PuttyInterfaceTypeDef pitd;
+uint32_t range;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -62,6 +65,48 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+
+void Sample_SimpleRanging(void) {
+	uprintf("Initializing...\n\r");
+	VL6180xDev_t myDev = 0x29;
+	VL6180x_RangeData_t Range;
+   //MyDev_Init(myDev);           // your code init device variable
+   //MyDev_SetChipEnable(myDev);  // your code assert chip enable
+   HAL_Delay(100);          // your code sleep at least 1 msec
+   VL6180x_InitData(myDev);
+   VL6180x_Prepare(myDev);
+   do {
+	   PuttyInterface_Update(&pitd);
+       VL6180x_RangePollMeasurement(myDev, &Range);
+       if (Range.errorStatus == 0 ) {
+           //MyDev_ShowRange(myDev, Range.range_mm); // your code display range in mm
+    	   uprintf("%ld\n\r",Range.range_mm);
+    	   range = Range.range_mm;
+       }
+       else {
+           //MyDev_ShowErr(myDev, Range.errorStatus); // your code display error code
+    	   uprintf("Error status\n\r");
+       }
+       PuttyInterface_Update(&pitd);
+   }// while (!MyDev_UserSayStop(myDev)); // your code to stop looping
+   while(1);
+}
+
+void HandleCommand(char* input)
+{
+	if(!strcmp(input, "start"))
+	{
+		uprintf("started\n\r");
+	}
+	else if (!strcmp(input, "r"))
+	{
+		uprintf("%ld\n\r",range);
+	}
+		else if (!strcmp(input, "end"))
+	{
+		uprintf("ended\n\r");
+	}
+}
 
 /* USER CODE END 0 */
 
@@ -97,21 +142,23 @@ int main(void)
   MX_I2C1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  pitd.handle = HandleCommand;
+  PuttyInterface_Init(&pitd);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+  //while (1)
+  //{
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-	  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+	  //PuttyInterface_Update(&pitd);
+	  //HAL_Delay(1);
 
-	  HAL_Delay(5000);
-
-  }
+  //}
+  Sample_SimpleRanging();
   /* USER CODE END 3 */
 
 }
@@ -126,13 +173,13 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-    /**Configure the main internal regulator output voltage 
+    /**Configure the main internal regulator output voltage
     */
   __HAL_RCC_PWR_CLK_ENABLE();
 
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
 
-    /**Initializes the CPU, AHB and APB busses clocks 
+    /**Initializes the CPU, AHB and APB busses clocks
     */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -143,7 +190,7 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Initializes the CPU, AHB and APB busses clocks 
+    /**Initializes the CPU, AHB and APB busses clocks
     */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -157,11 +204,11 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure the Systick interrupt time 
+    /**Configure the Systick interrupt time
     */
   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
-    /**Configure the Systick 
+    /**Configure the Systick
     */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
@@ -183,7 +230,7 @@ void _Error_Handler(char *file, int line)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  while(1) 
+  while(1)
   {
   }
   /* USER CODE END Error_Handler_Debug */
@@ -198,7 +245,7 @@ void _Error_Handler(char *file, int line)
   * @retval None
   */
 void assert_failed(uint8_t* file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
