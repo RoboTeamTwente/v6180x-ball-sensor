@@ -1,6 +1,7 @@
-From datasheet:
+Important sections from datasheet:
 
-![dat1](img/ratings.png)
+![dat1](img/pinout.png)
+![dat2](img/ratings.png)
 
 Circuit schematics:
 
