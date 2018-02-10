@@ -371,7 +371,7 @@ typedef enum {
     /** select no interrupt in #SYSTEM_MODE_GPIO1 pad is put in  Hi-Z*/
     #define GPIOx_SELECT_OFF                        0x00
     /** select gpiox as interrupt output in  #SYSTEM_MODE_GPIO1 */
-    #define GPIOx_SELECT_GPIO_INTERRUPT_OUTPUT      0x80
+    #define GPIOx_SELECT_GPIO_INTERRUPT_OUTPUT      0x08
     /** select range as source for interrupt on in #SYSTEM_MODE_GPIO1 */
     #define GPIOx_MODE_SELECT_RANGING               0x00
     /** select als as source for interrupt on in #SYSTEM_MODE_GPIO1 */

@@ -45,7 +45,7 @@ Src/%.o: ../Src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: MCU GCC Compiler'
 	@echo $(PWD)
-	arm-none-eabi-gcc -mcpu=cortex-m0 -mthumb -mfloat-abi=soft '-D__weak=__attribute__((weak))' '-D__packed=__attribute__((__packed__))' -DUSE_HAL_DRIVER -DSTM32F091xC -I"D:/Android/Projects/NewBallSensor/Inc" -I"D:/Android/Projects/NewBallSensor/Drivers/STM32F0xx_HAL_Driver/Inc" -I"D:/Android/Projects/NewBallSensor/Drivers/STM32F0xx_HAL_Driver/Inc/Legacy" -I"D:/Android/Projects/NewBallSensor/Drivers/CMSIS/Device/ST/STM32F0xx/Include" -I"D:/Android/Projects/NewBallSensor/Drivers/CMSIS/Include" -I"D:/Android/Projects/NewBallSensor/Inc"  -Og -g3 -Wall -fmessage-length=0 -ffunction-sections -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	arm-none-eabi-gcc -mcpu=cortex-m0 -mthumb -mfloat-abi=soft '-D__weak=__attribute__((weak))' '-D__packed=__attribute__((__packed__))' -DUSE_HAL_DRIVER -DSTM32F091xC -I"C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/Luka-code/NewBallSensor/Inc" -I"C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/Luka-code/NewBallSensor/Drivers/STM32F0xx_HAL_Driver/Inc" -I"C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/Luka-code/NewBallSensor/Drivers/STM32F0xx_HAL_Driver/Inc/Legacy" -I"C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/Luka-code/NewBallSensor/Drivers/CMSIS/Device/ST/STM32F0xx/Include" -I"C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/Luka-code/NewBallSensor/Drivers/CMSIS/Include" -I"C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/Luka-code/NewBallSensor/Inc"  -Og -g3 -Wall -fmessage-length=0 -ffunction-sections -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

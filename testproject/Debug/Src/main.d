@@ -37,7 +37,8 @@ Src/main.o: ../Src/main.c \
  C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/testproject/Inc/vl6180x_def.h \
  C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/testproject/Inc/vl6180x_cfg.h \
  C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/testproject/Inc/vl6180x_types.h \
- C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/testproject/Inc/vl6180x_platform.h
+ C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/testproject/Inc/vl6180x_platform.h \
+ C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/testproject/Inc/vl6180x_appcfg.h
 
 C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/testproject/Inc/main.h:
 
@@ -116,3 +117,5 @@ C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/testproject/Inc/vl6180x_cfg.h:
 C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/testproject/Inc/vl6180x_types.h:
 
 C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/testproject/Inc/vl6180x_platform.h:
+
+C:/Users/Gebruiker/Documents/werk/Roboteam/stm32/testproject/Inc/vl6180x_appcfg.h:

@@ -44,6 +44,8 @@
 #include "PuttyInterface.h"
 #include "vl6180x_api.h"
 
+#define myDev   0x52    // what we use as "API device
+
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -68,7 +70,7 @@ void SystemClock_Config(void);
 
 void Sample_SimpleRanging(void) {
 	uprintf("Initializing...\n\r");
-	VL6180xDev_t myDev = 0x29;
+	//VL6180xDev_t myDev = 0x29;
 	VL6180x_RangeData_t Range;
    //MyDev_Init(myDev);           // your code init device variable
    //MyDev_SetChipEnable(myDev);  // your code assert chip enable
@@ -106,6 +108,12 @@ void HandleCommand(char* input)
 	{
 		uprintf("ended\n\r");
 	}
+}
+
+int nErr=0;
+void OnErrLog(void){
+    /* just log */
+    nErr++;
 }
 
 /* USER CODE END 0 */

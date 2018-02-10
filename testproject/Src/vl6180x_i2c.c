@@ -40,7 +40,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 #include "vl6180x_i2c.h"
-#include "PuttyInterface.h"
 
 #ifndef I2C_BUFFER_CONFIG
 #error "I2C_BUFFER_CONFIG not defined"
@@ -165,7 +164,6 @@ int VL6180x_RdByte(VL6180xDev_t dev, uint16_t index, uint8_t *data){
     buffer[1]=index&0xFF;
 
     status=VL6180x_I2CWrite(dev, buffer, (uint8_t)2);
-
     if( !status ){
         status=VL6180x_I2CRead(dev, buffer,1);
         if( !status ){
@@ -173,6 +171,7 @@ int VL6180x_RdByte(VL6180xDev_t dev, uint16_t index, uint8_t *data){
         }
     }
     VL6180x_DoneI2CAcces(dev);
+
     return status;
 }
 
@@ -212,7 +211,7 @@ int  VL6180x_RdDWord(VL6180xDev_t dev, uint16_t index, uint32_t *data){
     buffer[0]=index>>8;
     buffer[1]=index&0xFF;
 
-    status= VL6180x_I2CWrite(dev, (uint8_t *) buffer, (uint8_t)2);
+    status=VL6180x_I2CWrite(dev, (uint8_t *) buffer, (uint8_t)2);
     if( !status ){
         status=VL6180x_I2CRead(dev, buffer,4);
         if( !status ){
