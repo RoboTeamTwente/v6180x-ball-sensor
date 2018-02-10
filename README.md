@@ -1,5 +1,6 @@
 Important sections from datasheet:
 
+![dat1](img/pinout sat.PNG)
 ![dat1](img/pinout.png)
 ![dat2](img/ratings.png)
 
