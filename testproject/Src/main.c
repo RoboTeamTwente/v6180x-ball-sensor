@@ -5,7 +5,7 @@
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether
+  * USER CODE END. Other portions of this file, whether 
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
@@ -41,13 +41,9 @@
 #include "i2c.h"
 #include "usart.h"
 #include "gpio.h"
-#include "PuttyInterface.h"
-#include "vl6180x_api.h"
-
-#define myDev   0x52    // what we use as "API device
 
 /* USER CODE BEGIN Includes */
-
+#define myDev   0x52    // what we use as "API device
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -68,15 +64,32 @@ void SystemClock_Config(void);
 
 /* USER CODE BEGIN 0 */
 
+void MyDev_SetChipEnable() {
+	//STARTUP SEQUENCE:
+	//Set GPIO0 to 0
+	//Set GPIO0 to 1
+	//Wait for a minimum of 400μs
+
+	uprintf("Starting chip enable\n\r");
+	HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)0);
+	HAL_Delay(10);
+    HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)1);
+    HAL_Delay(1);
+    /* Note that as we waited  1msec we could bypass VL6180x_WaitDeviceBooted(); */
+    VL6180x_WaitDeviceBooted(myDev);
+    uprintf("Device booted\n\r");
+}
+
 void Sample_SimpleRanging(void) {
-	uprintf("Initializing...\n\r");
+	uprintf("Starting SimpleRanging...\n\r");
 	//VL6180xDev_t myDev = 0x29;
 	VL6180x_RangeData_t Range;
    //MyDev_Init(myDev);           // your code init device variable
-   //MyDev_SetChipEnable(myDev);  // your code assert chip enable
-   HAL_Delay(100);          // your code sleep at least 1 msec
+   MyDev_SetChipEnable();  // your code assert chip enable
+            // your code sleep at least 1 msec
    VL6180x_InitData(myDev);
    VL6180x_Prepare(myDev);
+   uprintf("Starting measurements...\n\r");
    do {
 	   PuttyInterface_Update(&pitd);
        VL6180x_RangePollMeasurement(myDev, &Range);
@@ -183,13 +196,13 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-    /**Configure the main internal regulator output voltage
+    /**Configure the main internal regulator output voltage 
     */
   __HAL_RCC_PWR_CLK_ENABLE();
 
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
 
-    /**Initializes the CPU, AHB and APB busses clocks
+    /**Initializes the CPU, AHB and APB busses clocks 
     */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -200,7 +213,7 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Initializes the CPU, AHB and APB busses clocks
+    /**Initializes the CPU, AHB and APB busses clocks 
     */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -214,11 +227,11 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure the Systick interrupt time
+    /**Configure the Systick interrupt time 
     */
   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
-    /**Configure the Systick
+    /**Configure the Systick 
     */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
@@ -255,7 +268,7 @@ void _Error_Handler(char *file, int line)
   * @retval None
   */
 void assert_failed(uint8_t* file, uint32_t line)
-{
+{ 
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
