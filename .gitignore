@@ -1,2 +1,6 @@
 .metadata/
 RemoteSystemsTempFiles/
+**/*.d
+**/*.o
+**/*.ko
+**/*.elf
