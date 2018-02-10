@@ -2,10 +2,18 @@
 <launchConfiguration type="fr.ac6.mcu.debug.config.launchConfigurationType">
 <stringAttribute key="DEBBUGER_BOARD_NAME" value="NUCLEO-F401RE"/>
 <stringAttribute key="DEBBUGER_MCU_NAME" value="STM32F401RETx"/>
+<stringAttribute key="fr.ac6.mcu.ide.DBG_DEVICE_SHAREABLE_ALLOWED" value="false"/>
+<stringAttribute key="fr.ac6.mcu.ide.DBG_INTERFACE" value="SWD"/>
+<stringAttribute key="fr.ac6.mcu.ide.DBG_INTERFACE_FREQUENCY" value="4000000.0"/>
+<stringAttribute key="fr.ac6.mcu.ide.DBG_LOW_POWER_MODE_ALLOWED" value="true"/>
+<stringAttribute key="fr.ac6.mcu.ide.DBG_RESET_MODE" value="connect_under_reset"/>
+<stringAttribute key="fr.ac6.mcu.ide.DBG_STOP_WATCHDOG_THEN_HALTED_ALLOWED" value="true"/>
 <stringAttribute key="fr.ac6.mcu.ide.OPENOCD_NAME" value="&quot;${openstm32_openocd_path}\openocd.exe&quot;"/>
+<stringAttribute key="fr.ac6.mcu.ide.OPENOCD_OTHER_OPTIONS" value=""/>
 <intAttribute key="fr.ac6.mcu.ide.OPENOCD_PORT" value="3333"/>
 <stringAttribute key="fr.ac6.mcu.ide.OPENOCD_SCRIPT" value="C:\Users\olema\AppData\Roaming\Ac6\SW4STM32\openocd\scripts\st_board\nucleo_f401re.cfg"/>
-<stringAttribute key="fr.ac6.mcu.ide.OPENOCD_SCRIPT_CHOICE" value="global"/>
+<stringAttribute key="fr.ac6.mcu.ide.OPENOCD_SCRIPT_CHOICE" value="provided"/>
+<stringAttribute key="fr.ac6.mcu.ide.OPENOCD_SCRIPT_IS_LEGACY" value="true"/>
 <intAttribute key="org.eclipse.cdt.debug.gdbjtag.core.delay" value="3"/>
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.doHalt" value="true"/>
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.doReset" value="true"/>
@@ -40,8 +48,8 @@
 <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_REGISTER_GROUPS" value=""/>
 <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug/RangingAndALS_NucleoF401.elf"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="RangingAndALS_NucleoF401"/>
-<booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="true"/>
-<stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="fr.ac6.managedbuild.config.gnu.cross.exe.debug.1489651938"/>
+<booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value=""/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/RangingAndALS_NucleoF401"/>
 </listAttribute>

@@ -13,6 +13,8 @@
 #define VL6180_I2C_H_
 
 #include "vl6180x_platform.h"
+#include "stm32f4xx_hal.h"
+#include "usart.h"
 #include "i2c.h"
 #define addr (0x52)
 /**
@@ -93,6 +95,8 @@ typedef struct MyVL6180Dev_t *VL6180xDev_t;
 int  VL6180x_I2CWrite(VL6180xDev_t dev, uint8_t  *buff, uint8_t len)
 {
 
+	uint8_t text[] = "i2cwrite that bitch\r\n";
+	//HAL_UART_Transmit(&huart2, text, sizeof(text)-1,20);
 	HAL_I2C_Master_Transmit(&hi2c1, VLaddr, (uint8_t*) &buff, len, 10000);
 
 	return 0;
@@ -109,7 +113,8 @@ int  VL6180x_I2CWrite(VL6180xDev_t dev, uint8_t  *buff, uint8_t len)
 int VL6180x_I2CRead(VL6180xDev_t dev, uint8_t *buff, uint8_t len)
 {
 
-
+	uint8_t text[] = "i2cread that bitch\r\n";
+	//HAL_UART_Transmit(&huart2, text, sizeof(text)-1,20);
 HAL_I2C_Master_Receive(&hi2c1, VLaddr, (uint8_t*) &buff, len, 10000);
 
 	return 0;

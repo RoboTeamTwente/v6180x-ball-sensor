@@ -43,6 +43,8 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
+#include "PuttyInterface.h"
+#include "vl6180x_api.h"
 #define myDev   0x52    // what we use as "API device
 /* USER CODE END Includes */
 
@@ -76,7 +78,8 @@ void MyDev_SetChipEnable() {
     HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)1);
     HAL_Delay(1);
     /* Note that as we waited  1msec we could bypass VL6180x_WaitDeviceBooted(); */
-    VL6180x_WaitDeviceBooted(myDev);
+    uprintf("Waiting for device to boot\n\r");
+    //VL6180x_WaitDeviceBooted(myDev);
     uprintf("Device booted\n\r");
 }
 
@@ -179,8 +182,8 @@ int main(void)
 	  //HAL_Delay(1);
 
   //}
-  //uint8_t text[] = "test\r\n";
-  //HAL_UART_Transmit(&huart2, text, sizeof(text)-1,20);
+  uint8_t text[] = "test\r\n";
+  HAL_UART_Transmit(&huart2, text, sizeof(text)-1,20);
   Sample_SimpleRanging();
   /* USER CODE END 3 */
 
