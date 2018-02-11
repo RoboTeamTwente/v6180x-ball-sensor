@@ -240,14 +240,14 @@ int VL6180x_InitData(VL6180xDev_t dev){
         /* backup offset initial value from nvm these must be done prior any over call that use offset */
         status = VL6180x_RdByte(dev,SYSRANGE_PART_TO_PART_RANGE_OFFSET, (uint8_t*)&offset);
         if( status ){
-            VL6180x_ErrLog("SYSRANGE_PART_TO_PART_RANGE_OFFSET rd fail");
+            VL6180x_ErrLog("SYSRANGE_PART_TO_PART_RANGE_OFFSET rd fail\r\n");
             break;
         }
         VL6180xDevDataSet(dev, Part2PartOffsetNVM, offset);
 
         status=VL6180x_RdDWord( dev, SYSRANGE_RANGE_IGNORE_THRESHOLD, &CalValue);
         if( status ){
-            VL6180x_ErrLog("Part2PartAmbNVM rd fail");
+            VL6180x_ErrLog("Part2PartAmbNVM rd fail\r\n");
             break;
         }
         if( (CalValue&0xFFFF0000) == 0 ){
@@ -257,7 +257,7 @@ int VL6180x_InitData(VL6180xDev_t dev){
 
         status = VL6180x_RdWord(dev, SYSRANGE_CROSSTALK_COMPENSATION_RATE ,&u16);
         if( status){
-            VL6180x_ErrLog("SYSRANGE_CROSSTALK_COMPENSATION_RATE rd fail ");
+            VL6180x_ErrLog("SYSRANGE_CROSSTALK_COMPENSATION_RATE rd fail \r\n");
             break;
         }
         XTalkCompRate_KCps = Fix7_2_KCPs(u16);
@@ -265,14 +265,14 @@ int VL6180x_InitData(VL6180xDev_t dev){
 
         dmax_status = _DMax_InitData(dev);
         if( dmax_status < 0 ){
-            VL6180x_ErrLog("DMax init failure");
+            VL6180x_ErrLog("DMax init failure\r\n");
             break;
         }
 
         /* Read or wait for fresh out of reset  */
         status = VL6180x_RdByte(dev,SYSTEM_FRESH_OUT_OF_RESET, &FreshOutReset);
         if( status )  {
-            VL6180x_ErrLog("SYSTEM_FRESH_OUT_OF_RESET rd fail");
+            VL6180x_ErrLog("SYSTEM_FRESH_OUT_OF_RESET rd fail\r\n");
             break;
         }
         if( FreshOutReset!= 1 || dmax_status )
@@ -323,7 +323,7 @@ int VL6180x_SetI2CAddress(VL6180xDev_t dev, uint8_t NewAddress){
 
     status = VL6180x_WrByte(dev, I2C_SLAVE_DEVICE_ADDRESS, NewAddress/2);
     if( status ){
-        VL6180x_ErrLog("new i2c addr Wr fail");
+        VL6180x_ErrLog("new i2c addr Wr fail\r\n");
     }
     LOG_FUNCTION_END(status);
     return status;
@@ -357,11 +357,11 @@ int VL6180x_StaticInit(VL6180xDev_t dev){
     	init_status=VL6180x_UpscaleStaticInit(dev);
 
     if( init_status <0 ){
-    	VL6180x_ErrLog("StaticInit fail");
+    	VL6180x_ErrLog("StaticInit fail\r\n");
     	goto error;
     }
     else if(init_status > 0){
-    	VL6180x_ErrLog("StaticInit warning");
+    	VL6180x_ErrLog("StaticInit warning\r\n");
     }
 
 #if REFRESH_CACHED_DATA_AFTER_INIT
@@ -381,7 +381,7 @@ int VL6180x_StaticInit(VL6180xDev_t dev){
     while(0);
 #endif /* REFRESH_CACHED_DATA_AFTER_INIT */
     if( status < 0 ){
-        VL6180x_ErrLog("StaticInit fail");
+        VL6180x_ErrLog("StaticInit fail\r\n");
     }
     if( !status && init_status){
     	status = init_status;
@@ -426,7 +426,7 @@ int VL6180x_Prepare(VL6180xDev_t dev)
         /* set default threshold */
         status=VL6180x_RangeSetRawThresholds(dev, 10, 200);
         if( status ){
-            VL6180x_ErrLog("VL6180x_RangeSetRawThresholds fail");
+            VL6180x_ErrLog("VL6180x_RangeSetRawThresholds fail\r\n");
             break;
         }
 #if VL6180x_ALS_SUPPORT
@@ -441,7 +441,7 @@ int VL6180x_Prepare(VL6180xDev_t dev)
         /* set Als InterruptMode to new sample */
         status=VL6180x_AlsConfigInterrupt(dev, CONFIG_GPIO_INTERRUPT_NEW_SAMPLE_READY);
         if( status ) {
-            VL6180x_ErrLog("VL6180x_AlsConfigInterrupt fail");
+            VL6180x_ErrLog("VL6180x_AlsConfigInterrupt fail\r\n");
             break;
         }
 #endif
@@ -522,14 +522,14 @@ int VL6180x_AlsPollMeasurement(VL6180xDev_t dev, VL6180x_AlsData_t *pAlsData) {
     /* if device get stopped with left interrupt uncleared , it is required to clear them now or poll for new condition will never occur*/
     status=VL6180x_AlsClearInterrupt(dev);
     if(status){
-        VL6180x_ErrLog("VL6180x_AlsClearInterrupt fail");
+        VL6180x_ErrLog("VL6180x_AlsClearInterrupt fail\r\n");
         goto over;
     }
 #endif
 
     status=VL6180x_AlsSetSystemMode(dev, MODE_START_STOP|MODE_SINGLESHOT);
     if( status){
-        VL6180x_ErrLog("VL6180x_AlsSetSystemMode fail");
+        VL6180x_ErrLog("VL6180x_AlsSetSystemMode fail\r\n");
         goto over;
     }
 
@@ -552,7 +552,7 @@ int VL6180x_AlsPollMeasurement(VL6180xDev_t dev, VL6180x_AlsData_t *pAlsData) {
 
     ClrStatus = VL6180x_AlsClearInterrupt(dev);
     if (ClrStatus) {
-        VL6180x_ErrLog("VL6180x_AlsClearInterrupt fail");
+        VL6180x_ErrLog("VL6180x_AlsClearInterrupt fail\r\n");
         if (!status) {
             status = ClrStatus; /* leave previous if already on error */
         }
@@ -625,7 +625,7 @@ int VL6180x_AlsConfigInterrupt(VL6180xDev_t dev, uint8_t ConfigGpioInt)
         status = VL6180x_UpdateByte(dev, SYSTEM_INTERRUPT_CONFIG_GPIO, (uint8_t)(~CONFIG_GPIO_ALS_MASK), (ConfigGpioInt<<3));
     }
     else{
-        VL6180x_ErrLog("Invalid config mode param %d", (int)ConfigGpioInt);
+        VL6180x_ErrLog("Invalid config mode param %d\r\n", (int)ConfigGpioInt);
         status = INVALID_PARAMS;
     }
     LOG_FUNCTION_END(status);
@@ -728,14 +728,14 @@ int VL6180x_RangePollMeasurement(VL6180xDev_t dev, VL6180x_RangeData_t *pRangeDa
     /* if device get stopped with left interrupt uncleared , it is required to clear them now or poll for new condition will never occur*/
     status=VL6180x_RangeClearInterrupt(dev);
     if(status){
-        VL6180x_ErrLog("VL6180x_RangeClearInterrupt fail");
+        VL6180x_ErrLog("VL6180x_RangeClearInterrupt fail\r\n");
         goto done;
     }
 #endif
     /* //![single_shot_snipet] */
     status=VL6180x_RangeSetSystemMode(dev, MODE_START_STOP|MODE_SINGLESHOT);
     if( status ){
-        VL6180x_ErrLog("VL6180x_RangeSetSystemMode fail");
+        VL6180x_ErrLog("VL6180x_RangeSetSystemMode fail\r\n");
         goto done;
     }
 
@@ -747,7 +747,7 @@ int VL6180x_RangePollMeasurement(VL6180xDev_t dev, VL6180x_RangeData_t *pRangeDa
             break;
         }
         if( IntStatus.status.Error !=0 ){
-          VL6180x_ErrLog("GPIO int Error report %d",(int)IntStatus.val);
+          VL6180x_ErrLog("GPIO int Error report %d\r\n",(int)IntStatus.val);
           status = RANGE_ERROR;
           break;
         }
@@ -767,7 +767,7 @@ int VL6180x_RangePollMeasurement(VL6180xDev_t dev, VL6180x_RangeData_t *pRangeDa
     /*  clear range interrupt source */
     ClrStatus = VL6180x_RangeClearInterrupt(dev);
     if( ClrStatus ){
-        VL6180x_ErrLog("VL6180x_RangeClearInterrupt fail");
+        VL6180x_ErrLog("VL6180x_RangeClearInterrupt fail\r\n");
         /*  leave initial status if already in error  */
         if( !status ){
             status=ClrStatus;
@@ -798,7 +798,7 @@ int VL6180x_RangeGetMeasurement(VL6180xDev_t dev, VL6180x_RangeData_t *pRangeDat
                 pRangeData->errorStatus = RawStatus >>4;
             }
             else{
-                VL6180x_ErrLog("Rd RESULT_RANGE_STATUS fail");
+                VL6180x_ErrLog("Rd RESULT_RANGE_STATUS fail\r\n");
             }
 	#if VL6180x_WRAP_AROUND_FILTER_SUPPORT || VL6180x_HAVE_DMAX_RANGING
             status = _GetRateResult(dev, pRangeData);
@@ -826,11 +826,11 @@ int VL6180x_RangeGetMeasurement(VL6180xDev_t dev, VL6180x_RangeData_t *pRangeDat
 #endif
         }
         else{
-            VL6180x_ErrLog("Rd RESULT_RANGE_SIGNAL_RATE fail");
+            VL6180x_ErrLog("Rd RESULT_RANGE_SIGNAL_RATE fail\r\n");
         }
     }
     else{
-        VL6180x_ErrLog("VL6180x_GetRangeResult fail");
+        VL6180x_ErrLog("VL6180x_GetRangeResult fail\r\n");
     }
 error:
     LOG_FUNCTION_END_FMT(status, "%d %d %d", (int)pRangeData->range_mm, (int)pRangeData->signalRate_mcps,  (int)pRangeData->errorStatus) ;
@@ -848,7 +848,7 @@ int VL6180x_RangeGetMeasurementIfReady(VL6180xDev_t dev, VL6180x_RangeData_t *pR
     status = VL6180x_RangeGetInterruptStatus(dev, &IntStatus.val);
     if( status ==0 ){
         if( IntStatus.status.Error !=0 ){
-            VL6180x_ErrLog("GPIO int Error report %d",(int)IntStatus.val);
+            VL6180x_ErrLog("GPIO int Error report %d\r\n",(int)IntStatus.val);
             status = RANGE_ERROR;
         }
         else
@@ -858,7 +858,7 @@ int VL6180x_RangeGetMeasurementIfReady(VL6180xDev_t dev, VL6180x_RangeData_t *pR
                /*  clear range interrupt source */
                status = VL6180x_RangeClearInterrupt(dev);
                if( status ){
-                   VL6180x_ErrLog("VL6180x_RangeClearInterrupt fail");
+                   VL6180x_ErrLog("VL6180x_RangeClearInterrupt fail\r\n");
                }
            }
         }
@@ -867,7 +867,7 @@ int VL6180x_RangeGetMeasurementIfReady(VL6180xDev_t dev, VL6180x_RangeData_t *pR
         }
     }
     else{
-        VL6180x_ErrLog("fail to get interrupt status");
+        VL6180x_ErrLog("fail to get interrupt status\r\n");
     }
     LOG_FUNCTION_END(status) ;
     return status;
@@ -946,7 +946,7 @@ int VL6180x_RangeSetThresholds(VL6180xDev_t dev, uint16_t low, uint16_t high, in
             }
             status=VL6180x_RangeSetRawThresholds(dev, (uint8_t)(low/scale), (uint8_t)(high/scale));
             if( status ){
-                VL6180x_ErrLog("VL6180x_RangeSetRawThresholds fail");
+                VL6180x_ErrLog("VL6180x_RangeSetRawThresholds fail\r\n");
             }
             if( UseSafeParamHold ){
                 int HoldStatus;
@@ -977,7 +977,7 @@ int VL6180x_RangeGetThresholds(VL6180xDev_t dev, uint16_t *low, uint16_t *high)
         if( high != NULL ){
             status=VL6180x_RdByte(dev, SYSRANGE_THRESH_HIGH,&RawHigh);
             if( status ){
-                VL6180x_ErrLog("rd SYSRANGE_THRESH_HIGH fail");
+                VL6180x_ErrLog("rd SYSRANGE_THRESH_HIGH fail\r\n");
                 break;
             }
             *high=(uint16_t)RawHigh*scale;
@@ -985,7 +985,7 @@ int VL6180x_RangeGetThresholds(VL6180xDev_t dev, uint16_t *low, uint16_t *high)
         if( low != NULL ) {
             status=VL6180x_RdByte(dev, SYSRANGE_THRESH_LOW, &RawLow);
             if( status ){
-                VL6180x_ErrLog("rd SYSRANGE_THRESH_LOW fail");
+                VL6180x_ErrLog("rd SYSRANGE_THRESH_LOW fail\r\n");
                 break;
             }
             *low=(uint16_t)RawLow*scale;
@@ -1459,7 +1459,7 @@ int VL6180x_RangeSetInterMeasPeriod(VL6180xDev_t dev, uint32_t  InterMeasTime_ms
         SetTime=(uint8_t)(InterMeasTime_msec/10);
         status=VL6180x_WrByte(dev, SYSRANGE_INTERMEASUREMENT_PERIOD, SetTime);
         if( status ){
-            VL6180x_ErrLog("SYSRANGE_INTERMEASUREMENT_PERIOD wr fail");
+            VL6180x_ErrLog("SYSRANGE_INTERMEASUREMENT_PERIOD wr fail\r\n");
         }
         else
         if( SetTime != InterMeasTime_msec /10 ) {
@@ -1520,7 +1520,7 @@ int VL6180x_RangeSetSystemMode(VL6180xDev_t dev, uint8_t  mode)
     if( mode <= 3){
         status=VL6180x_WrByte(dev, SYSRANGE_START, mode);
         if( status ){
-            VL6180x_ErrLog("SYSRANGE_START wr fail");
+            VL6180x_ErrLog("SYSRANGE_START wr fail\r\n");
         }
     }
     else{
@@ -1569,7 +1569,7 @@ static int VL6180x_RangeSetEarlyConvergenceEestimateThreshold(VL6180xDev_t dev)
     do{
         status = VL6180x_RdByte(dev, SYSRANGE_MAX_CONVERGENCE_TIME, &u8);
         if( status ){
-            VL6180x_ErrLog("SYSRANGE_MAX_CONVERGENCE_TIME rd fail");
+            VL6180x_ErrLog("SYSRANGE_MAX_CONVERGENCE_TIME rd fail\r\n");
             break;
         }
         maxConv_ms = u8;
@@ -1582,7 +1582,7 @@ static int VL6180x_RangeSetEarlyConvergenceEestimateThreshold(VL6180xDev_t dev)
         convergTime_us = maxConv_ms * cMicroSecPerMilliSec - AveTime;
         status = VL6180x_RdDWord(dev, 0xB8, &fineThresh);
         if( status ) {
-            VL6180x_ErrLog("reg 0xB8 rd fail");
+            VL6180x_ErrLog("reg 0xB8 rd fail\r\n");
             break;
         }
         fineThresh*=256;
@@ -1622,7 +1622,7 @@ static int32_t _GetAveTotalTime(VL6180xDev_t dev) {
     Samples = u8 & cMeasMask;
     status = VL6180x_RdByte(dev, READOUT_AVERAGING_SAMPLE_PERIOD, &u8);
     if (status) {
-        VL6180x_ErrLog("i2c READOUT_AVERAGING_SAMPLE_PERIOD fail");
+        VL6180x_ErrLog("i2c READOUT_AVERAGING_SAMPLE_PERIOD fail\r\n");
         return -1;
     }
     SamplePeriod = u8;

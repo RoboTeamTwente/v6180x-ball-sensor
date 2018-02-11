@@ -37,6 +37,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "vl6180x_appcfg.h"
 #include "vl6180x_def.h"
+#include "stm32f4xx_hal.h"
+#include "usart.h"
+#include "PuttyInterface.h"
 
 
 
@@ -76,11 +79,12 @@ extern volatile uint32_t g_TickCnt;
     }while(0)
 
 #else /* VL6180X_LOG_ENABLE no logging */
-    void OnErrLog(void);
+    void OnErrLog(char *);
 	#define LOG_FUNCTION_START(...) (void)0
 	#define LOG_FUNCTION_END(...) (void)0
 	#define LOG_FUNCTION_END_FMT(...) (void)0
-    #define VL6180x_ErrLog(... ) OnErrLog()
+    //#define VL6180x_ErrLog OnErrLog;
+	#define VL6180x_ErrLog(f_, ...) uprintf((f_), ##__VA_ARGS__)
 #endif
 
 

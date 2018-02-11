@@ -54,6 +54,7 @@
 extern I2C_HandleTypeDef hi2c1;
 
 /* USER CODE BEGIN Private defines */
+void Custom_I2C1_Init(I2C_HandleTypeDef *hi2c1);
 
 /* USER CODE END Private defines */
 

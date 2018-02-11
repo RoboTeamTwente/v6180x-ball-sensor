@@ -45,13 +45,17 @@
 /* USER CODE BEGIN Includes */
 #include "PuttyInterface.h"
 #include "vl6180x_api.h"
-#define myDev   0x52    // what we use as "API device
+
+#define myDev   0x29    // what we use as "API device
+#define i2c_bus      (&hi2c1)
+#define def_i2c_time_out 100
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
 PuttyInterfaceTypeDef pitd;
 uint32_t range;
 /* USER CODE END PV */
@@ -65,6 +69,27 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+
+
+
+int VL6180x_I2CWrite(VL6180xDev_t addr, uint8_t  *buff, uint8_t len){
+    int status;
+    status = HAL_I2C_Master_Transmit(i2c_bus,  addr, buff, len , def_i2c_time_out);
+    if( status ){
+        Custom_I2C1_Init(&hi2c1);
+    }
+    return status;
+}
+
+int VL6180x_I2CRead(VL6180xDev_t addr, uint8_t  *buff, uint8_t len){
+    int status;
+    status = HAL_I2C_Master_Receive(i2c_bus,  addr, buff, len , def_i2c_time_out);
+    if( status ){
+    	Custom_I2C1_Init(&hi2c1);
+    }
+
+    return status;
+}
 
 void MyDev_SetChipEnable() {
 	//STARTUP SEQUENCE:
@@ -81,6 +106,7 @@ void MyDev_SetChipEnable() {
     uprintf("Waiting for device to boot\n\r");
     //VL6180x_WaitDeviceBooted(myDev);
     uprintf("Device booted\n\r");
+    HAL_Delay(1);
 }
 
 void Sample_SimpleRanging(void) {
@@ -92,6 +118,7 @@ void Sample_SimpleRanging(void) {
             // your code sleep at least 1 msec
    VL6180x_InitData(myDev);
    VL6180x_Prepare(myDev);
+
    uprintf("Starting measurements...\n\r");
    do {
 	   PuttyInterface_Update(&pitd);
@@ -127,9 +154,10 @@ void HandleCommand(char* input)
 }
 
 int nErr=0;
-void OnErrLog(void){
+void OnErrLog(char* string){
     /* just log */
-    nErr++;
+	uprintf(string);
+	nErr++;
 }
 
 /* USER CODE END 0 */
@@ -169,6 +197,8 @@ int main(void)
   pitd.handle = HandleCommand;
   PuttyInterface_Init(&pitd);
 
+  Custom_I2C1_Init(&hi2c1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -182,8 +212,7 @@ int main(void)
 	  //HAL_Delay(1);
 
   //}
-  uint8_t text[] = "test\r\n";
-  HAL_UART_Transmit(&huart2, text, sizeof(text)-1,20);
+  SysTick_Config(HAL_RCC_GetHCLKFreq() / 1000);
   Sample_SimpleRanging();
   /* USER CODE END 3 */
 
