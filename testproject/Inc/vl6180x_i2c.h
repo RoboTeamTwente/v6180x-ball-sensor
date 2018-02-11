@@ -16,7 +16,7 @@
 #include "stm32f4xx_hal.h"
 #include "usart.h"
 #include "i2c.h"
-#define addr (0x29)
+#define addr (0x29<<1)
 /**
  * @defgroup cci_i2c  CCI to RAW I2C translation layer
  *
@@ -80,7 +80,7 @@ typedef struct MyVL6180Dev_t *VL6180xDev_t;
  */
 #define I2C_BUFFER_CONFIG 1
 #define REG_CHIP_ID 0x00
-#define VLaddr (0x29) //default I2C address of the vl6180x chip
+#define VLaddr (0x29<<1) //default I2C address of the vl6180x chip
 
 
 
@@ -95,11 +95,13 @@ typedef struct MyVL6180Dev_t *VL6180xDev_t;
 int  VL6180x_I2CWrite(VL6180xDev_t dev, uint8_t  *buff, uint8_t len)
 {
 
-	uint8_t text[] = "i2cwrite that bitch\r\n";
-	//HAL_UART_Transmit(&huart2, text, sizeof(text)-1,20);
-	HAL_I2C_Master_Transmit(&hi2c1, VLaddr, (uint8_t*) &buff, len, 10000);
 
-	return 0;
+	int status=HAL_I2C_Master_Transmit(&hi2c1, VLaddr, (uint8_t*) &buff, len, 10000);
+	if(!status)
+		return 0;
+	uint8_t text[] = "transmit failed\r\n";
+	HAL_UART_Transmit(&huart2, text, sizeof(text)-1,20);
+	return status;
 }
 /**
  *
@@ -112,12 +114,13 @@ int  VL6180x_I2CWrite(VL6180xDev_t dev, uint8_t  *buff, uint8_t len)
  */
 int VL6180x_I2CRead(VL6180xDev_t dev, uint8_t *buff, uint8_t len)
 {
+int status = HAL_I2C_Master_Receive(&hi2c1, VLaddr, (uint8_t*) &buff, len, 10000);
 
-	uint8_t text[] = "i2cread that bitch\r\n";
-	//HAL_UART_Transmit(&huart2, text, sizeof(text)-1,20);
-HAL_I2C_Master_Receive(&hi2c1, VLaddr, (uint8_t*) &buff, len, 10000);
-
-	return 0;
+if(!status)
+		return 0;
+	uint8_t text[] = "receive failed\r\n";
+	HAL_UART_Transmit(&huart2, text, sizeof(text)-1,20);
+	return status;
 }
 
 

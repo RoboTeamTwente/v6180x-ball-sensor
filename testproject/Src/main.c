@@ -5,7 +5,7 @@
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
+  * USER CODE END. Other portions of this file, whether
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
@@ -97,7 +97,7 @@ void Sample_SimpleRanging(void) {
 	   PuttyInterface_Update(&pitd);
        VL6180x_RangePollMeasurement(myDev, &Range);
        if (Range.errorStatus == 0 ) {
-           //MyDev_ShowRange(myDev, Range.range_mm); // your code display range in mm
+
     	   uprintf("range: %ld\n\r",Range.range_mm);
     	   range = Range.range_mm;
        }
@@ -135,22 +135,95 @@ void OnErrLog(void){
 void RdByte(uint8_t dev, uint16_t index, uint8_t *data) {
 
 	    int  status;
-	    uint8_t *buffer;
+	    uint16_t *data_write;
+	    uint8_t *data_read;
 
-	    buffer[0]=index>>8;
-	    buffer[1]=index&0xFF;
+	    data_write[0]=(index>>8) & 0xFF;
+	    data_write[1]=index&0xFF;
 
-	    status=HAL_I2C_Master_Transmit(&hi2c1, dev, (uint8_t*) &buffer, 2, 10000);
+	    status=HAL_I2C_Master_Transmit(&hi2c1, dev, (uint8_t*) &data_write, 2, 10000);
 	    if( !status ){
-	        status=HAL_I2C_Master_Receive(&hi2c1, dev, (uint8_t*) &buffer, 1, 10000);
+	        status=HAL_I2C_Master_Receive(&hi2c1, dev, (uint8_t*) &data_read, 1, 10000);
 	        if( !status ){
-	            *data=buffer[0];
+	            *data=data_read[0];
 	        }
 	        else
 	        	uprintf("receive failed\r\n");
 	    }
 	    else
 	    	uprintf("transmit failed\r\n");
+}
+
+void WrByte(uint8_t dev, uint16_t index, uint8_t data) {
+
+	    int  status;
+	    uint32_t *data_write;
+
+	    data_write[0] = (index >> 8) & 0xFF;; // MSB of register address
+	    data_write[1] = index & 0xFF; // LSB of register address
+	    data_write[2] = data & 0xFF;
+
+	    status=HAL_I2C_Master_Transmit(&hi2c1, dev, (uint8_t*) &data_write, 3, 10000);
+	    if( !status ){
+	            return;
+	    }
+	    else
+	    	uprintf("transmit failed\r\n");
+}
+
+
+void LoadSettings() {
+	WrByte(myDev,0x0207, 0x01);
+	WrByte(myDev,0x0208, 0x01);
+	WrByte(myDev,0x0096, 0x00);
+	WrByte(myDev,0x0097, 0xfd);
+	WrByte(myDev,0x00e3, 0x00);
+	WrByte(myDev,0x00e4, 0x04);
+	WrByte(myDev,0x00e5, 0x02);
+	WrByte(myDev,0x00e6, 0x01);
+	WrByte(myDev,0x00e7, 0x03);
+	WrByte(myDev,0x00f5, 0x02);
+	WrByte(myDev,0x00d9, 0x05);
+	WrByte(myDev,0x00db, 0xce);
+	WrByte(myDev,0x00dc, 0x03);
+	WrByte(myDev,0x00dd, 0xf8);
+	WrByte(myDev,0x009f, 0x00);
+	WrByte(myDev,0x00a3, 0x3c);
+	WrByte(myDev,0x00b7, 0x00);
+	WrByte(myDev,0x00bb, 0x3c);
+	WrByte(myDev,0x00b2, 0x09);
+	WrByte(myDev,0x00ca, 0x09);
+	WrByte(myDev,0x0198, 0x01);
+	WrByte(myDev,0x01b0, 0x17);
+	WrByte(myDev,0x01ad, 0x00);
+	WrByte(myDev,0x00ff, 0x05);
+	WrByte(myDev,0x0100, 0x05);
+	WrByte(myDev,0x0199, 0x05);
+	WrByte(myDev,0x01a6, 0x1b);
+	WrByte(myDev,0x01ac, 0x3e);
+	WrByte(myDev,0x01a7, 0x1f);
+	WrByte(myDev,0x0030, 0x00);
+	// Recommended : Public registers - See data sheet for more detail
+	WrByte(myDev,0x0011, 0x10); // Enables polling for ‘New Sample ready’
+	// when measurement completes
+	WrByte(myDev,0x010a, 0x30); // Set the averaging sample period
+	// (compromise between lower noise and
+	// increased execution time)
+	WrByte(myDev,0x003f, 0x46); // Sets the light and dark gain (upper
+	// nibble). Dark gain should not be
+	// changed.
+	WrByte(myDev,0x0031, 0xFF); // sets the # of range measurements after
+	// which auto calibration of system is
+	// performed
+	WrByte(myDev,0x0040, 0x63); // Set ALS integration time to 100ms
+	WrByte(myDev,0x002e, 0x01); // perform a single temperature calibration
+	// of the ranging sensor
+	WrByte(myDev,0x001b, 0x09); // Set default ranging inter-measurement
+	// period to 100ms
+	WrByte(myDev,0x003e, 0x31); // Set default ALS inter-measurement period
+	// to 500ms
+	WrByte(myDev,0x0014, 0x24); // Configures interrupt on ‘New Sample
+	// Ready threshold event’
 }
 
 void i2ctest()
@@ -165,7 +238,7 @@ void i2ctest()
 	status = VL6180x_Prepare(myDev);
 	if(!status)
 			uprintf("init success\r\n");*/
-	uint8_t data = 1;
+	uint8_t data2,data3 = 1;
 
 	//int status = HAL_I2C_Mem_Read(&hi2c1, (0x29<<1), IDENTIFICATION_MODEL_ID, I2C_MEMADD_SIZE_8BIT, &data, 2, 10000);
 
@@ -173,12 +246,55 @@ void i2ctest()
 	    //{
 		//uprintf("data1: %d\r\n", data);
 	    //}
-	RdByte(myDev, IDENTIFICATION_MODEL_ID, &data);
-	uprintf("data2: %d\r\n", data);
-	RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &data);
-	uprintf("data3: %d\r\n", data);
+/*	RdByte(myDev, IDENTIFICATION_MODEL_ID, &data3);
+	uprintf("data2: %d\r\n", data2);
+	RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &data2);
+	uprintf("data3: %d\r\n", data3);*/
 
+	uint8_t reset, status, range_status, id, range;
+
+	RdByte(myDev, IDENTIFICATION_MODEL_ID, &id);
+	uprintf("id: %d\r\n", id);
+
+	RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &reset);
+	uprintf("reset: %d\r\n", reset);
+
+	LoadSettings();
+	uprintf("settings loaded\r\n");
+	WrByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, 0x00);
+	RdByte(myDev, RESULT_RANGE_STATUS, &range_status);
+	uprintf("range status: %d\r\n", range_status);
+
+	while (!( (range_status) & 0x01)){
+		RdByte(myDev, RESULT_RANGE_STATUS, &range_status);
+	}
+
+	uprintf("--> range status: %d\r\n", range_status);
+
+	  // Start a range measurement
+	WrByte(myDev, SYSRANGE_START, 0x01);
+
+	RdByte(myDev, RESULT_INTERRUPT_STATUS_GPIO, &status);
+	//uprintf("status: %d\r\n", status);
+
+	  // Poll until bit 2 is set
+	  while (! ((status) & 0x04)){
+		  RdByte(myDev, RESULT_INTERRUPT_STATUS_GPIO, &status);
+	  }
+	  uprintf("--> status: %d\r\n", status);
+
+	  // read range in mm
+	  RdByte(myDev, RESULT_RANGE_VAL, &range);
+	  uprintf("range: %d\r\n", range);
+
+	  // clear interrupt
+	  WrByte(myDev, SYSTEM_INTERRUPT_CLEAR, 0x07);
+
+	  RdByte(myDev, RESULT_RANGE_STATUS, &status);
+	  status = status >> 4;
+	  uprintf("status: %d\r\n", range);
 }
+
 
 /* USER CODE END 0 */
 
@@ -222,17 +338,17 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)1);
-  while (1)
-  {
-  /* USER CODE END WHILE */
+  //while (1)
+  //{
+   /* USER CODE END WHILE */
 
-  /* USER CODE BEGIN 3 */
+   /* USER CODE BEGIN 3 */
 	  //PuttyInterface_Update(&pitd);
 	  //HAL_Delay(1);
-	  i2ctest();
 
-  }
 
+  //}
+  i2ctest();
   //Sample_SimpleRanging();
   /* USER CODE END 3 */
 
@@ -248,13 +364,13 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-    /**Configure the main internal regulator output voltage 
+    /**Configure the main internal regulator output voltage
     */
   __HAL_RCC_PWR_CLK_ENABLE();
 
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
 
-    /**Initializes the CPU, AHB and APB busses clocks 
+    /**Initializes the CPU, AHB and APB busses clocks
     */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -265,7 +381,7 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Initializes the CPU, AHB and APB busses clocks 
+    /**Initializes the CPU, AHB and APB busses clocks
     */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -279,11 +395,11 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure the Systick interrupt time 
+    /**Configure the Systick interrupt time
     */
   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
-    /**Configure the Systick 
+    /**Configure the Systick
     */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
@@ -320,7 +436,7 @@ void _Error_Handler(char *file, int line)
   * @retval None
   */
 void assert_failed(uint8_t* file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
