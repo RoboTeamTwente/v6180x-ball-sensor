@@ -45,7 +45,7 @@
 /* USER CODE BEGIN Includes */
 #include "PuttyInterface.h"
 #include "vl6180x_api.h"
-#define myDev   0x52    // what we use as "API device
+#define myDev   (0x29<<1)    // what we use as "API device
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -132,6 +132,54 @@ void OnErrLog(void){
     nErr++;
 }
 
+void RdByte(uint8_t dev, uint16_t index, uint8_t *data) {
+
+	    int  status;
+	    uint8_t *buffer;
+
+	    buffer[0]=index>>8;
+	    buffer[1]=index&0xFF;
+
+	    status=HAL_I2C_Master_Transmit(&hi2c1, dev, (uint8_t*) &buffer, 2, 10000);
+	    if( !status ){
+	        status=HAL_I2C_Master_Receive(&hi2c1, dev, (uint8_t*) &buffer, 1, 10000);
+	        if( !status ){
+	            *data=buffer[0];
+	        }
+	        else
+	        	uprintf("receive failed\r\n");
+	    }
+	    else
+	    	uprintf("transmit failed\r\n");
+}
+
+void i2ctest()
+{
+/*
+	int status = VL6180x_RdByte(myDev, IDENTIFICATION_MODEL_ID, &data);
+	if(!status)
+		uprintf("data1: %d\r\n", data);
+	status = VL6180x_RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &data);
+		if(!status)
+			uprintf("data2: %d\r\n", data);
+	status = VL6180x_Prepare(myDev);
+	if(!status)
+			uprintf("init success\r\n");*/
+	uint8_t data = 1;
+
+	//int status = HAL_I2C_Mem_Read(&hi2c1, (0x29<<1), IDENTIFICATION_MODEL_ID, I2C_MEMADD_SIZE_8BIT, &data, 2, 10000);
+
+	//if(status == HAL_OK)
+	    //{
+		//uprintf("data1: %d\r\n", data);
+	    //}
+	RdByte(myDev, IDENTIFICATION_MODEL_ID, &data);
+	uprintf("data2: %d\r\n", data);
+	RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &data);
+	uprintf("data3: %d\r\n", data);
+
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -173,18 +221,19 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  //while (1)
-  //{
+  HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)1);
+  while (1)
+  {
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
 	  //PuttyInterface_Update(&pitd);
 	  //HAL_Delay(1);
+	  i2ctest();
 
-  //}
-  uint8_t text[] = "test\r\n";
-  HAL_UART_Transmit(&huart2, text, sizeof(text)-1,20);
-  Sample_SimpleRanging();
+  }
+
+  //Sample_SimpleRanging();
   /* USER CODE END 3 */
 
 }

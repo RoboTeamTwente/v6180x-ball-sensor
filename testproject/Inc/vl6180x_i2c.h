@@ -16,7 +16,7 @@
 #include "stm32f4xx_hal.h"
 #include "usart.h"
 #include "i2c.h"
-#define addr (0x52)
+#define addr (0x29)
 /**
  * @defgroup cci_i2c  CCI to RAW I2C translation layer
  *
