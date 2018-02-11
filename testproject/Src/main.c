@@ -120,88 +120,10 @@ void OnErrLog(void){
     nErr++;
 }
 
-
-void WriteBuffer(uint8_t I2C_ADDRESS, uint8_t *aTxBuffer, uint8_t TXBUFFERSIZE)
-{
-    /* -> Start the transmission process */
-    /* While the I2C in reception process, user can transmit data through "aTxBuffer" buffer */
-    while(HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)myDev, (uint8_t*)aTxBuffer, (uint16_t)TXBUFFERSIZE, (uint32_t)1000)!= HAL_OK)
-    {
-        /*
-         * Error_Handler() function is called when Timeout error occurs.
-         * When Acknowledge failure occurs (Slave don't acknowledge it's address)
-         * Master restarts communication
-         */
-
-        if (HAL_I2C_GetError(&hi2c1) != HAL_I2C_ERROR_AF)
-        {
-            uprintf("In I2C::WriteBuffer -> error");
-            //Error_Handler(3);
-        }
-        uprintf("WriteBuffer - HAL not ready 1\r\n");
-    }
-
-    /* -> Wait for the end of the transfer */
-    /* Before starting a new communication transfer, you need to check the current
-     * state of the peripheral; if it’s busy you need to wait for the end of current
-     * transfer before starting a new one.
-     * For simplicity reasons, this example is just waiting till the end of the
-     * transfer, but application may perform other tasks while transfer operation
-     * is ongoing.
-     */
-      while (HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY)
-      {
-    	  uprintf("WriteBuffer - HAL not ready 2\r\n");
-      }
-}
-
 void WrByte(uint8_t dev, uint16_t index, uint8_t data) {
 
-	    uint8_t data_write[3];
-
-	    data_write[0] = (index >> 8); // MSB of register address
-	    data_write[1] = index; // LSB of register address
-	    data_write[2] = data;
-
-	    WriteBuffer(dev, (uint8_t *)&data_write, 1);
+	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)index, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&data), 3, 100);
 }
-
-
-void ReadBuffer(uint8_t I2C_ADDRESS, uint8_t RegAddr, uint8_t *aRxBuffer, uint8_t RXBUFFERSIZE)
-{
-    /* -> Lets ask for register's address */
-    WriteBuffer(myDev, &RegAddr, 2);
-
-    /* -> Put I2C peripheral in reception process */
-    while(HAL_I2C_Master_Receive(&hi2c1, (uint16_t)myDev, aRxBuffer, (uint16_t)RXBUFFERSIZE, (uint32_t)1000) != HAL_OK)
-    {
-        /* Error_Handler() function is called when Timeout error occurs.
-         * When Acknowledge failure occurs (Slave don't acknowledge it's address)
-         * Master restarts communication
-         */
-        if (HAL_I2C_GetError(&hi2c1) != HAL_I2C_ERROR_AF)
-        {
-            uprintf( "In I2C::WriteBuffer -> error");
-            //Error_Handler(4);
-        }
-        uprintf("HAL not ready 1\r\n");
-    }
-
-    /* -> Wait for the end of the transfer */
-    /* Before starting a new communication transfer, you need to check the current
-     * state of the peripheral; if it’s busy you need to wait for the end of current
-     * transfer before starting a new one.
-     * For simplicity reasons, this example is just waiting till the end of the
-     * transfer, but application may perform other tasks while transfer operation
-     * is ongoing.
-     **/
-    while (HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY)
-    {
-    	uprintf("HAL not ready 2\r\n");
-    }
-}
-
-
 
 void LoadSettings() {
 	WrByte(myDev,0x0207, 0x01);
@@ -271,55 +193,51 @@ void adafruitPort()
 	uprintf("Device booted\n\r");
 
 	uint8_t reset, status, range_status, id, range;
+	uint8_t val;
 
-	ReadBuffer(myDev, IDENTIFICATION_MODEL_ID, &id, 1);
+	//CHECK DEVICE ID
+	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)IDENTIFICATION_MODEL_ID, I2C_MEMADD_SIZE_16BIT, &id, 2, 100);
 	uprintf("id: %d\r\n", id);
 	if(id == 0xB4)
 		uprintf("--> Device recognized!\n\r");
-	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)IDENTIFICATION_MODEL_ID, I2C_MEMADD_SIZE_16BIT, &id, 2, 100);
-	uprintf("id: %d\r\n", id);
 
+	//CHECK RESET
 	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, &reset, 2, 100);
-
-//	ReadBuffer(myDev, SYSTEM_FRESH_OUT_OF_RESET, &reset,1);
 	uprintf("reset: %d\r\n", reset);
 
-	LoadSettings();
+	//LoadSettings();
 	uprintf("settings loaded\r\n");
-	WrByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, 0x00);
-
-	ReadBuffer(myDev, RESULT_RANGE_STATUS, &range_status,1);
-	uprintf("range status: %d\r\n", range_status);
-
+	val = 0x00;
+	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 3, 100);
 
 	while (!( (range_status) & 0x01)){
-		ReadBuffer(myDev, RESULT_RANGE_STATUS, &range_status,1);
+		HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_STATUS, I2C_MEMADD_SIZE_16BIT, &range_status, 2, 100);
 	}
 
 	uprintf("--> range status: %d\r\n", range_status);
 
 	  // Start a range measurement
-	//WrByte(myDev, SYSRANGE_START, 0x01);
+	val = 0x01;
+	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSRANGE_START, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 3, 100);
 
-	ReadBuffer(myDev, RESULT_INTERRUPT_STATUS_GPIO, &status,1);
+	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_INTERRUPT_STATUS_GPIO, I2C_MEMADD_SIZE_16BIT, &status, 2, 100);
 	uprintf("status: %d\r\n", status);
-
 	  // Poll until bit 2 is set
-	  while (! ((status) == 0x04)){
-		  ReadBuffer(myDev, RESULT_INTERRUPT_STATUS_GPIO, &status,1);
+	while (! ((status) & 0x04)){
+		  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_INTERRUPT_STATUS_GPIO, I2C_MEMADD_SIZE_16BIT, &status, 2, 100);
 	  }
 	  uprintf("--> status: %d\r\n", status);
 
 	  // read range in mm
-	  ReadBuffer(myDev, RESULT_RANGE_VAL, &range,1);
+	  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_VAL, I2C_MEMADD_SIZE_16BIT, &range, 2, 100);
 	  uprintf("range: %d\r\n", range);
 
 	  // clear interrupt
 	  WrByte(myDev, SYSTEM_INTERRUPT_CLEAR, 0x07);
 
-	  ReadBuffer(myDev, RESULT_RANGE_STATUS, &status,1);
+	  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_STATUS, I2C_MEMADD_SIZE_16BIT, &status, 2, 100);
 	  status = status >> 4;
-	  uprintf("status: %d\r\n", range);
+	  uprintf("status: %d\r\n", status);
 }
 
 void i2ctest()
