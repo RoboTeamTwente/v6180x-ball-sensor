@@ -110,20 +110,8 @@ void Sample_SimpleRanging(void) {
    while(1);
 }
 
-void HandleCommand(char* input)
-{
-	if(!strcmp(input, "start"))
-	{
-		uprintf("started\n\r");
-	}
-	else if (!strcmp(input, "r"))
-	{
-		uprintf("%ld\n\r",range);
-	}
-		else if (!strcmp(input, "end"))
-	{
-		uprintf("ended\n\r");
-	}
+void HandleCommand(char* input){
+
 }
 
 int nErr=0;
@@ -132,45 +120,6 @@ void OnErrLog(void){
     nErr++;
 }
 
-void RdByte(uint8_t dev, uint16_t index, uint8_t *data) {
-
-	    int  status;
-	    uint16_t *data_write;
-	    uint8_t *data_read;
-
-	    data_write[0]=(index>>8) & 0xFF;
-	    data_write[1]=index&0xFF;
-
-	    status=HAL_I2C_Master_Transmit(&hi2c1, dev, (uint8_t*) &data_write, 2, 10000);
-	    if( !status ){
-	        status=HAL_I2C_Master_Receive(&hi2c1, dev, data_read, 1, 10000);
-	        if( !status ){
-	            *data=data_read[0];
-	        	uprintf("received: %d\r\n",data_read[0]);
-	        }
-	        else
-	        	uprintf("receive failed\r\n");
-	    }
-	    else
-	    	uprintf("transmit failed\r\n");
-}
-
-void WrByte(uint8_t dev, uint16_t index, uint8_t data) {
-
-	    int  status;
-	    uint8_t data_write[3];
-
-	    data_write[0] = (index >> 8) & 0xFF;; // MSB of register address
-	    data_write[1] = index & 0xFF; // LSB of register address
-	    data_write[2] = data & 0xFF;
-
-	    status=HAL_I2C_Master_Transmit(&hi2c1, dev, data_write, 3, 10000);
-	    if( !status ){
-	            return;
-	    }
-	    else
-	    	uprintf("transmit failed\r\n");
-}
 
 void WriteBuffer(uint8_t I2C_ADDRESS, uint8_t *aTxBuffer, uint8_t TXBUFFERSIZE)
 {
@@ -237,6 +186,17 @@ void ReadBuffer(uint8_t I2C_ADDRESS, uint8_t RegAddr, uint8_t *aRxBuffer, uint8_
     }
 }
 
+void WrByte(uint8_t dev, uint16_t index, uint8_t data) {
+
+	    uint8_t data_write[3];
+
+	    data_write[0] = (index >> 8) & 0xFF;; // MSB of register address
+	    data_write[1] = index & 0xFF; // LSB of register address
+	    data_write[2] = data & 0xFF;
+
+	    WriteBuffer(dev, data_write, 3);
+}
+
 
 void LoadSettings() {
 	WrByte(myDev,0x0207, 0x01);
@@ -294,45 +254,23 @@ void LoadSettings() {
 
 void adafruitPort()
 {
-/*
-	int status = VL6180x_RdByte(myDev, IDENTIFICATION_MODEL_ID, &data);
-	if(!status)
-		uprintf("data1: %d\r\n", data);
-	status = VL6180x_RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &data);
-		if(!status)
-			uprintf("data2: %d\r\n", data);
-	status = VL6180x_Prepare(myDev);
-	if(!status)
-			uprintf("init success\r\n");*/
-	uint8_t data2,data3 = 1;
-
-	//int status = HAL_I2C_Mem_Read(&hi2c1, (0x29<<1), IDENTIFICATION_MODEL_ID, I2C_MEMADD_SIZE_8BIT, &data, 2, 10000);
-
-	//if(status == HAL_OK)
-	    //{
-		//uprintf("data1: %d\r\n", data);
-	    //}
-/*	RdByte(myDev, IDENTIFICATION_MODEL_ID, &data3);
-	uprintf("data2: %d\r\n", data2);
-	RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &data2);
-	uprintf("data3: %d\r\n", data3);*/
 
 	uint8_t reset, status, range_status, id, range;
 
-	RdByte(myDev, IDENTIFICATION_MODEL_ID, &id);
+	ReadBuffer(myDev, IDENTIFICATION_MODEL_ID, &id, 1);
 	uprintf("id: %d\r\n", id);
 
-	RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &reset);
+	ReadBuffer(myDev, SYSTEM_FRESH_OUT_OF_RESET, &reset,1);
 	uprintf("reset: %d\r\n", reset);
 
 	LoadSettings();
 	uprintf("settings loaded\r\n");
 	WrByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, 0x00);
-	RdByte(myDev, RESULT_RANGE_STATUS, &range_status);
+	ReadBuffer(myDev, RESULT_RANGE_STATUS, &range_status,1);
 	uprintf("range status: %d\r\n", range_status);
 
 	while (!( (range_status) & 0x01)){
-		RdByte(myDev, RESULT_RANGE_STATUS, &range_status);
+		ReadBuffer(myDev, RESULT_RANGE_STATUS, &range_status,1);
 	}
 
 	uprintf("--> range status: %d\r\n", range_status);
@@ -340,23 +278,23 @@ void adafruitPort()
 	  // Start a range measurement
 	WrByte(myDev, SYSRANGE_START, 0x01);
 
-	RdByte(myDev, RESULT_INTERRUPT_STATUS_GPIO, &status);
-	//uprintf("status: %d\r\n", status);
+	ReadBuffer(myDev, RESULT_INTERRUPT_STATUS_GPIO, &status,1);
+	uprintf("status: %d\r\n", status);
 
 	  // Poll until bit 2 is set
 	  while (! ((status) & 0x04)){
-		  RdByte(myDev, RESULT_INTERRUPT_STATUS_GPIO, &status);
+		  ReadBuffer(myDev, RESULT_INTERRUPT_STATUS_GPIO, &status,1);
 	  }
 	  uprintf("--> status: %d\r\n", status);
 
 	  // read range in mm
-	  RdByte(myDev, RESULT_RANGE_VAL, &range);
+	  ReadBuffer(myDev, RESULT_RANGE_VAL, &range,1);
 	  uprintf("range: %d\r\n", range);
 
 	  // clear interrupt
 	  WrByte(myDev, SYSTEM_INTERRUPT_CLEAR, 0x07);
 
-	  RdByte(myDev, RESULT_RANGE_STATUS, &status);
+	  ReadBuffer(myDev, RESULT_RANGE_STATUS, &status,1);
 	  status = status >> 4;
 	  uprintf("status: %d\r\n", range);
 }
@@ -431,7 +369,7 @@ int main(void)
 
 
   //}
-  i2ctest();
+  adafruitPort();
   //Sample_SimpleRanging();
   /* USER CODE END 3 */
 
