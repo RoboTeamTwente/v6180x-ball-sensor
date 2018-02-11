@@ -624,7 +624,7 @@ typedef union IntrStatus_u{
  *
  * @ingroup device_regdef
  */
-#define RESULT_INTERRUPT_STATUS_GPIO          0x4F
+#define RESULT_INTERRUPT_STATUS_GPIO          0x04F
     /** ranging interrupt 1st bit position in #RESULT_INTERRUPT_STATUS_GPIO */
     #define RES_INT_RANGE_SHIFT  0
     /** ALS interrupt 1st bit position in #RESULT_INTERRUPT_STATUS_GPIO */

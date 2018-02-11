@@ -138,7 +138,7 @@ void WriteBuffer(uint8_t I2C_ADDRESS, uint8_t *aTxBuffer, uint8_t TXBUFFERSIZE)
             uprintf("In I2C::WriteBuffer -> error");
             //Error_Handler(3);
         }
-
+        uprintf("WriteBuffer - HAL not ready 1\r\n");
     }
 
     /* -> Wait for the end of the transfer */
@@ -151,13 +151,26 @@ void WriteBuffer(uint8_t I2C_ADDRESS, uint8_t *aTxBuffer, uint8_t TXBUFFERSIZE)
      */
       while (HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY)
       {
+    	  uprintf("WriteBuffer - HAL not ready 2\r\n");
       }
 }
+
+void WrByte(uint8_t dev, uint16_t index, uint8_t data) {
+
+	    uint8_t data_write[3];
+
+	    data_write[0] = (index >> 8); // MSB of register address
+	    data_write[1] = index; // LSB of register address
+	    data_write[2] = data;
+
+	    WriteBuffer(dev, (uint8_t *)&data_write, 1);
+}
+
 
 void ReadBuffer(uint8_t I2C_ADDRESS, uint8_t RegAddr, uint8_t *aRxBuffer, uint8_t RXBUFFERSIZE)
 {
     /* -> Lets ask for register's address */
-    WriteBuffer(I2C_ADDRESS, &RegAddr, 1);
+    WriteBuffer(myDev, &RegAddr, 2);
 
     /* -> Put I2C peripheral in reception process */
     while(HAL_I2C_Master_Receive(&hi2c1, (uint16_t)myDev, aRxBuffer, (uint16_t)RXBUFFERSIZE, (uint32_t)1000) != HAL_OK)
@@ -171,6 +184,7 @@ void ReadBuffer(uint8_t I2C_ADDRESS, uint8_t RegAddr, uint8_t *aRxBuffer, uint8_
             uprintf( "In I2C::WriteBuffer -> error");
             //Error_Handler(4);
         }
+        uprintf("HAL not ready 1\r\n");
     }
 
     /* -> Wait for the end of the transfer */
@@ -183,19 +197,10 @@ void ReadBuffer(uint8_t I2C_ADDRESS, uint8_t RegAddr, uint8_t *aRxBuffer, uint8_
      **/
     while (HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY)
     {
+    	uprintf("HAL not ready 2\r\n");
     }
 }
 
-void WrByte(uint8_t dev, uint16_t index, uint8_t data) {
-
-	    uint8_t data_write[3];
-
-	    data_write[0] = (index >> 8) & 0xFF;; // MSB of register address
-	    data_write[1] = index & 0xFF; // LSB of register address
-	    data_write[2] = data & 0xFF;
-
-	    WriteBuffer(dev, data_write, 3);
-}
 
 
 void LoadSettings() {
@@ -255,19 +260,37 @@ void LoadSettings() {
 void adafruitPort()
 {
 
+	uprintf("Starting chip enable\n\r");
+	HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)0);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)1);
+	HAL_Delay(1);
+	    /* Note that as we waited  1msec we could bypass VL6180x_WaitDeviceBooted(); */
+	uprintf("Waiting for device to boot\n\r");
+	    //VL6180x_WaitDeviceBooted(myDev);
+	uprintf("Device booted\n\r");
+
 	uint8_t reset, status, range_status, id, range;
 
 	ReadBuffer(myDev, IDENTIFICATION_MODEL_ID, &id, 1);
 	uprintf("id: %d\r\n", id);
+	if(id == 0xB4)
+		uprintf("--> Device recognized!\n\r");
+	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)IDENTIFICATION_MODEL_ID, I2C_MEMADD_SIZE_16BIT, &id, 2, 100);
+	uprintf("id: %d\r\n", id);
 
-	ReadBuffer(myDev, SYSTEM_FRESH_OUT_OF_RESET, &reset,1);
+	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, &reset, 2, 100);
+
+//	ReadBuffer(myDev, SYSTEM_FRESH_OUT_OF_RESET, &reset,1);
 	uprintf("reset: %d\r\n", reset);
 
 	LoadSettings();
 	uprintf("settings loaded\r\n");
 	WrByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, 0x00);
+
 	ReadBuffer(myDev, RESULT_RANGE_STATUS, &range_status,1);
 	uprintf("range status: %d\r\n", range_status);
+
 
 	while (!( (range_status) & 0x01)){
 		ReadBuffer(myDev, RESULT_RANGE_STATUS, &range_status,1);
@@ -276,13 +299,13 @@ void adafruitPort()
 	uprintf("--> range status: %d\r\n", range_status);
 
 	  // Start a range measurement
-	WrByte(myDev, SYSRANGE_START, 0x01);
+	//WrByte(myDev, SYSRANGE_START, 0x01);
 
 	ReadBuffer(myDev, RESULT_INTERRUPT_STATUS_GPIO, &status,1);
 	uprintf("status: %d\r\n", status);
 
 	  // Poll until bit 2 is set
-	  while (! ((status) & 0x04)){
+	  while (! ((status) == 0x04)){
 		  ReadBuffer(myDev, RESULT_INTERRUPT_STATUS_GPIO, &status,1);
 	  }
 	  uprintf("--> status: %d\r\n", status);
@@ -358,18 +381,18 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)1);
-  //while (1)
-  //{
+  //HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)1);
+  while (1)
+  {
    /* USER CODE END WHILE */
 
    /* USER CODE BEGIN 3 */
 	  //PuttyInterface_Update(&pitd);
-	  //HAL_Delay(1);
+	  HAL_Delay(1);
+  	  adafruitPort();
 
+  }
 
-  //}
-  adafruitPort();
   //Sample_SimpleRanging();
   /* USER CODE END 3 */
 
