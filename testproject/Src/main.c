@@ -143,9 +143,10 @@ void RdByte(uint8_t dev, uint16_t index, uint8_t *data) {
 
 	    status=HAL_I2C_Master_Transmit(&hi2c1, dev, (uint8_t*) &data_write, 2, 10000);
 	    if( !status ){
-	        status=HAL_I2C_Master_Receive(&hi2c1, dev, (uint8_t*) &data_read, 1, 10000);
+	        status=HAL_I2C_Master_Receive(&hi2c1, dev, data_read, 1, 10000);
 	        if( !status ){
 	            *data=data_read[0];
+	        	uprintf("received: %d\r\n",data_read[0]);
 	        }
 	        else
 	        	uprintf("receive failed\r\n");
@@ -157,18 +158,83 @@ void RdByte(uint8_t dev, uint16_t index, uint8_t *data) {
 void WrByte(uint8_t dev, uint16_t index, uint8_t data) {
 
 	    int  status;
-	    uint32_t *data_write;
+	    uint8_t data_write[3];
 
 	    data_write[0] = (index >> 8) & 0xFF;; // MSB of register address
 	    data_write[1] = index & 0xFF; // LSB of register address
 	    data_write[2] = data & 0xFF;
 
-	    status=HAL_I2C_Master_Transmit(&hi2c1, dev, (uint8_t*) &data_write, 3, 10000);
+	    status=HAL_I2C_Master_Transmit(&hi2c1, dev, data_write, 3, 10000);
 	    if( !status ){
 	            return;
 	    }
 	    else
 	    	uprintf("transmit failed\r\n");
+}
+
+void WriteBuffer(uint8_t I2C_ADDRESS, uint8_t *aTxBuffer, uint8_t TXBUFFERSIZE)
+{
+    /* -> Start the transmission process */
+    /* While the I2C in reception process, user can transmit data through "aTxBuffer" buffer */
+    while(HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)myDev, (uint8_t*)aTxBuffer, (uint16_t)TXBUFFERSIZE, (uint32_t)1000)!= HAL_OK)
+    {
+        /*
+         * Error_Handler() function is called when Timeout error occurs.
+         * When Acknowledge failure occurs (Slave don't acknowledge it's address)
+         * Master restarts communication
+         */
+
+        if (HAL_I2C_GetError(&hi2c1) != HAL_I2C_ERROR_AF)
+        {
+            uprintf("In I2C::WriteBuffer -> error");
+            //Error_Handler(3);
+        }
+
+    }
+
+    /* -> Wait for the end of the transfer */
+    /* Before starting a new communication transfer, you need to check the current
+     * state of the peripheral; if it’s busy you need to wait for the end of current
+     * transfer before starting a new one.
+     * For simplicity reasons, this example is just waiting till the end of the
+     * transfer, but application may perform other tasks while transfer operation
+     * is ongoing.
+     */
+      while (HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY)
+      {
+      }
+}
+
+void ReadBuffer(uint8_t I2C_ADDRESS, uint8_t RegAddr, uint8_t *aRxBuffer, uint8_t RXBUFFERSIZE)
+{
+    /* -> Lets ask for register's address */
+    WriteBuffer(I2C_ADDRESS, &RegAddr, 1);
+
+    /* -> Put I2C peripheral in reception process */
+    while(HAL_I2C_Master_Receive(&hi2c1, (uint16_t)myDev, aRxBuffer, (uint16_t)RXBUFFERSIZE, (uint32_t)1000) != HAL_OK)
+    {
+        /* Error_Handler() function is called when Timeout error occurs.
+         * When Acknowledge failure occurs (Slave don't acknowledge it's address)
+         * Master restarts communication
+         */
+        if (HAL_I2C_GetError(&hi2c1) != HAL_I2C_ERROR_AF)
+        {
+            uprintf( "In I2C::WriteBuffer -> error");
+            //Error_Handler(4);
+        }
+    }
+
+    /* -> Wait for the end of the transfer */
+    /* Before starting a new communication transfer, you need to check the current
+     * state of the peripheral; if it’s busy you need to wait for the end of current
+     * transfer before starting a new one.
+     * For simplicity reasons, this example is just waiting till the end of the
+     * transfer, but application may perform other tasks while transfer operation
+     * is ongoing.
+     **/
+    while (HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY)
+    {
+    }
 }
 
 
@@ -226,7 +292,7 @@ void LoadSettings() {
 	// Ready threshold event’
 }
 
-void i2ctest()
+void adafruitPort()
 {
 /*
 	int status = VL6180x_RdByte(myDev, IDENTIFICATION_MODEL_ID, &data);
@@ -293,6 +359,23 @@ void i2ctest()
 	  RdByte(myDev, RESULT_RANGE_STATUS, &status);
 	  status = status >> 4;
 	  uprintf("status: %d\r\n", range);
+}
+
+void i2ctest()
+{
+/*	uint8_t reset, status, range_status, id, range;
+
+	RdByte(myDev, IDENTIFICATION_MODEL_ID, &id);
+	uprintf("id: %d\r\n", id);
+
+	RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &reset);
+	uprintf("reset: %d\r\n", reset);*/
+
+	uint8_t reset, status, range_status, id, range;
+
+	ReadBuffer(myDev, 0x000, &id, 1);
+	uprintf("id: %d\r\n", id);
+
 }
 
 
