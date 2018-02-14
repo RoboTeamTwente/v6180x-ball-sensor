@@ -4,3 +4,4 @@ RemoteSystemsTempFiles/
 **/*.o
 **/*.ko
 **/*.elf
+**/Debug/
