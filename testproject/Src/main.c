@@ -44,7 +44,7 @@
 
 /* USER CODE BEGIN Includes */
 #include "PuttyInterface.h"
-#include "vl6180x_api.h"
+#include "vl6180x_def.h"
 #define myDev   (0x29<<1)
 /* USER CODE END Includes */
 

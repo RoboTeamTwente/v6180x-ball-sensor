@@ -3155,9 +3155,6 @@ Discarded input sections
  .group         0x00000000        0x8 Src/main.o
  .group         0x00000000        0x8 Src/main.o
  .group         0x00000000        0x8 Src/main.o
- .group         0x00000000        0x8 Src/main.o
- .group         0x00000000        0x8 Src/main.o
- .group         0x00000000        0x8 Src/main.o
  .text          0x00000000        0x0 Src/main.o
  .data          0x00000000        0x0 Src/main.o
  .bss           0x00000000        0x4 Src/main.o
@@ -4910,7 +4907,7 @@ OUTPUT(testproject.elf elf32-littlearm)
  .debug_ranges  0x00000820       0x20 Src/usart.o
  .debug_ranges  0x00000840       0x20 startup/startup_stm32f446xx.o
 
-.debug_macro    0x00000000    0x22500
+.debug_macro    0x00000000    0x22449
  .debug_macro   0x00000000      0x373 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
  .debug_macro   0x00000373      0x898 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
  .debug_macro   0x00000c0b       0x22 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
@@ -4985,19 +4982,16 @@ OUTPUT(testproject.elf elf32-littlearm)
  .debug_macro   0x00020ae0       0x1c Src/PuttyInterface.o
  .debug_macro   0x00020afc      0x31d Src/gpio.o
  .debug_macro   0x00020e19      0x327 Src/i2c.o
- .debug_macro   0x00021140      0x3c4 Src/main.o
- .debug_macro   0x00021504       0x28 Src/main.o
- .debug_macro   0x0002152c       0x28 Src/main.o
- .debug_macro   0x00021554      0x2a7 Src/main.o
- .debug_macro   0x000217fb       0x22 Src/main.o
- .debug_macro   0x0002181d       0x2e Src/main.o
- .debug_macro   0x0002184b       0x40 Src/main.o
- .debug_macro   0x0002188b      0x313 Src/stm32f4xx_hal_msp.o
- .debug_macro   0x00021b9e      0x31d Src/stm32f4xx_it.o
- .debug_macro   0x00021ebb      0x31e Src/system_stm32f4xx.o
- .debug_macro   0x000221d9      0x327 Src/usart.o
+ .debug_macro   0x00021140      0x39d Src/main.o
+ .debug_macro   0x000214dd       0x28 Src/main.o
+ .debug_macro   0x00021505       0x28 Src/main.o
+ .debug_macro   0x0002152d      0x2a7 Src/main.o
+ .debug_macro   0x000217d4      0x313 Src/stm32f4xx_hal_msp.o
+ .debug_macro   0x00021ae7      0x31d Src/stm32f4xx_it.o
+ .debug_macro   0x00021e04      0x31e Src/system_stm32f4xx.o
+ .debug_macro   0x00022122      0x327 Src/usart.o
 
-.debug_line     0x00000000     0xa193
+.debug_line     0x00000000     0xa158
  .debug_line    0x00000000      0x9de Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
  .debug_line    0x000009de      0xa0a Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
  .debug_line    0x000013e8      0x978 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
@@ -5008,14 +5002,14 @@ OUTPUT(testproject.elf elf32-littlearm)
  .debug_line    0x00005ce6      0x911 Src/PuttyInterface.o
  .debug_line    0x000065f7      0x803 Src/gpio.o
  .debug_line    0x00006dfa      0x841 Src/i2c.o
- .debug_line    0x0000763b      0x9e8 Src/main.o
- .debug_line    0x00008023      0x803 Src/stm32f4xx_hal_msp.o
- .debug_line    0x00008826      0x88b Src/stm32f4xx_it.o
- .debug_line    0x000090b1      0x826 Src/system_stm32f4xx.o
- .debug_line    0x000098d7      0x83d Src/usart.o
- .debug_line    0x0000a114       0x7f startup/startup_stm32f446xx.o
+ .debug_line    0x0000763b      0x9ad Src/main.o
+ .debug_line    0x00007fe8      0x803 Src/stm32f4xx_hal_msp.o
+ .debug_line    0x000087eb      0x88b Src/stm32f4xx_it.o
+ .debug_line    0x00009076      0x826 Src/system_stm32f4xx.o
+ .debug_line    0x0000989c      0x83d Src/usart.o
+ .debug_line    0x0000a0d9       0x7f startup/startup_stm32f446xx.o
 
-.debug_str      0x00000000    0xc4ef8
+.debug_str      0x00000000    0xc4a75
  .debug_str     0x00000000    0xc152a Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
                               0xc18d9 (size before relaxing)
  .debug_str     0x000c152a      0x3b8 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
@@ -5036,15 +5030,15 @@ OUTPUT(testproject.elf elf32-littlearm)
                               0xc0d43 (size before relaxing)
  .debug_str     0x000c3ab2       0x42 Src/i2c.o
                               0xc127e (size before relaxing)
- .debug_str     0x000c3af4     0x12bd Src/main.o
-                              0xc2da4 (size before relaxing)
- .debug_str     0x000c4db1       0x1b Src/stm32f4xx_hal_msp.o
+ .debug_str     0x000c3af4      0xe3a Src/main.o
+                              0xc2921 (size before relaxing)
+ .debug_str     0x000c492e       0x1b Src/stm32f4xx_hal_msp.o
                               0xc10ad (size before relaxing)
- .debug_str     0x000c4dcc       0xb8 Src/stm32f4xx_it.o
+ .debug_str     0x000c4949       0xb8 Src/stm32f4xx_it.o
                               0xc0c00 (size before relaxing)
- .debug_str     0x000c4e84       0x5a Src/system_stm32f4xx.o
+ .debug_str     0x000c4a01       0x5a Src/system_stm32f4xx.o
                               0xc0d57 (size before relaxing)
- .debug_str     0x000c4ede       0x1a Src/usart.o
+ .debug_str     0x000c4a5b       0x1a Src/usart.o
                               0xc11a5 (size before relaxing)
 
 .comment        0x00000000       0x6e
