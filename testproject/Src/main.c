@@ -83,32 +83,6 @@ void MyDev_SetChipEnable() {
     uprintf("Device booted\n\r");
 }
 
-void Sample_SimpleRanging(void) {
-	uprintf("Starting SimpleRanging...\n\r");
-	//VL6180xDev_t myDev = 0x29;
-	VL6180x_RangeData_t Range;
-   //MyDev_Init(myDev);           // your code init device variable
-   MyDev_SetChipEnable();  // your code assert chip enable
-            // your code sleep at least 1 msec
-   VL6180x_InitData(myDev);
-   VL6180x_Prepare(myDev);
-   uprintf("Starting measurements...\n\r");
-   do {
-	   PuttyInterface_Update(&pitd);
-       VL6180x_RangePollMeasurement(myDev, &Range);
-       if (Range.errorStatus == 0 ) {
-
-    	   uprintf("range: %ld\n\r",Range.range_mm);
-    	   range = Range.range_mm;
-       }
-       else {
-           //MyDev_ShowErr(myDev, Range.errorStatus); // your code display error code
-    	   uprintf("Error status\n\r");
-       }
-       PuttyInterface_Update(&pitd);
-   }// while (!MyDev_UserSayStop(myDev)); // your code to stop looping
-   while(1);
-}
 
 void HandleCommand(char* input){
 
@@ -181,16 +155,7 @@ void LoadSettings() {
 
 void adafruitPort()
 {
-
-	uprintf("Starting chip enable\n\r");
-	HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)0);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)1);
-	HAL_Delay(1);
-	    /* Note that as we waited  1msec we could bypass VL6180x_WaitDeviceBooted(); */
-	uprintf("Waiting for device to boot\n\r");
-	    //VL6180x_WaitDeviceBooted(myDev);
-	uprintf("Device booted\n\r");
+	MyDev_SetChipEnable(); //toggle GPIO0 to reset device
 
 	uint8_t reset, status, range_status, id, range;
 	uint8_t val;
@@ -198,8 +163,12 @@ void adafruitPort()
 	//CHECK DEVICE ID
 	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)IDENTIFICATION_MODEL_ID, I2C_MEMADD_SIZE_16BIT, &id, 2, 100);
 	uprintf("id: %d\r\n", id);
-	if(id == 0xB4)
+	if(id == 0xB4) {
 		uprintf("--> Device recognized!\n\r");
+	}
+	else {
+		return;
+	}
 
 	//CHECK RESET
 	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, &reset, 2, 100);
