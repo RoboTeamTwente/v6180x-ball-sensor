@@ -96,12 +96,20 @@ void OnErrLog(void){
 
 void WrByte(uint8_t dev, uint16_t index, uint8_t data) {
 
-	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)index, I2C_MEMADD_SIZE_16BIT, &data, 1, 10000);
+	HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)index, I2C_MEMADD_SIZE_16BIT, &data, 1, 10000);
+
+	if(status != HAL_OK) {
+		uprintf("WrByte failed\r\n");
+	}
 }
 
-void RdByte(uint8_t dev, uint16_t index, uint8_t* data) {
+void RdByte(uint8_t dev, uint16_t index, uint8_t* data, uint8_t size) {
 
-	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)index, I2C_MEMADD_SIZE_16BIT, data, 1, 10000);
+	HAL_StatusTypeDef status = HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)index, I2C_MEMADD_SIZE_16BIT, data, size, 10000);
+
+	if(status != HAL_OK) {
+		uprintf("RdByte failed\r\n");
+	}
 }
 
 void LoadSettings() {
@@ -221,10 +229,15 @@ void adafruitPort()
 
 void i2ctest()
 {
+	MyDev_SetChipEnable();
+
 	uint8_t reset, status, range_status, id, range;
 
-	RdByte(myDev, IDENTIFICATION_MODEL_ID, &id);
-	uprintf("id: %d\r\n", id);
+	RdByte(myDev, IDENTIFICATION_MODEL_ID, &id, 1);
+	uprintf("size 1: id: %d\r\n", id);
+
+	RdByte(myDev, IDENTIFICATION_MODEL_ID, &id, 2);
+	uprintf("size 2: id: %d\r\n", id);
 
 	/*RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &reset);
 	uprintf("reset: %d\r\n", reset);
@@ -288,7 +301,8 @@ int main(void)
    /* USER CODE BEGIN 3 */
 	  //PuttyInterface_Update(&pitd);
 	  HAL_Delay(1);
-  	  adafruitPort();
+  	  //adafruitPort();
+	  i2ctest();
 
   }
 
