@@ -53,6 +53,7 @@
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 PuttyInterfaceTypeDef pitd;
+char STATUS_DEBUG;
 
 /* USER CODE END PV */
 
@@ -72,15 +73,14 @@ void MyDev_SetChipEnable() {
 	//Set GPIO0 to 1
 	//Wait for a minimum of 400μs
 
-	//uprintf("Starting chip enable\n\r");
+	if(STATUS_DEBUG)
+		uprintf("Starting chip enable\n\r");
 	HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)0);
 	HAL_Delay(10);
     HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)1);
     HAL_Delay(1);
-    /* Note that as we waited  1msec we could bypass VL6180x_WaitDeviceBooted(); */
-    //uprintf("Waiting for device to boot\n\r");
-    //VL6180x_WaitDeviceBooted(myDev);
-    //uprintf("Device booted\n\r");
+    if(STATUS_DEBUG)
+    	uprintf("Device booted\n\r");
 }
 
 
@@ -94,7 +94,7 @@ void OnErrLog(void){
     nErr++;
 }
 
-void WrByte(uint8_t dev, uint16_t index, uint8_t data) {
+void WrByte(uint16_t index, uint8_t data) {
 
 	HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)index, I2C_MEMADD_SIZE_16BIT, &data, 1, 10000);
 
@@ -103,9 +103,9 @@ void WrByte(uint8_t dev, uint16_t index, uint8_t data) {
 	}
 }
 
-void RdByte(uint8_t dev, uint16_t index, uint8_t* data, uint8_t size) {
+void RdByte(uint16_t index, uint8_t* data) {
 
-	HAL_StatusTypeDef status = HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)index, I2C_MEMADD_SIZE_16BIT, data, size, 10000);
+	HAL_StatusTypeDef status = HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)index, I2C_MEMADD_SIZE_16BIT, data, 1, 10000);
 
 	if(status != HAL_OK) {
 		uprintf("RdByte failed\r\n");
@@ -113,56 +113,56 @@ void RdByte(uint8_t dev, uint16_t index, uint8_t* data, uint8_t size) {
 }
 
 void LoadSettings() {
-	WrByte(myDev,0x0207, 0x01);
-	WrByte(myDev,0x0208, 0x01);
-	WrByte(myDev,0x0096, 0x00);
-	WrByte(myDev,0x0097, 0xfd);
-	WrByte(myDev,0x00e3, 0x00);
-	WrByte(myDev,0x00e4, 0x04);
-	WrByte(myDev,0x00e5, 0x02);
-	WrByte(myDev,0x00e6, 0x01);
-	WrByte(myDev,0x00e7, 0x03);
-	WrByte(myDev,0x00f5, 0x02);
-	WrByte(myDev,0x00d9, 0x05);
-	WrByte(myDev,0x00db, 0xce);
-	WrByte(myDev,0x00dc, 0x03);
-	WrByte(myDev,0x00dd, 0xf8);
-	WrByte(myDev,0x009f, 0x00);
-	WrByte(myDev,0x00a3, 0x3c);
-	WrByte(myDev,0x00b7, 0x00);
-	WrByte(myDev,0x00bb, 0x3c);
-	WrByte(myDev,0x00b2, 0x09);
-	WrByte(myDev,0x00ca, 0x09);
-	WrByte(myDev,0x0198, 0x01);
-	WrByte(myDev,0x01b0, 0x17);
-	WrByte(myDev,0x01ad, 0x00);
-	WrByte(myDev,0x00ff, 0x05);
-	WrByte(myDev,0x0100, 0x05);
-	WrByte(myDev,0x0199, 0x05);
-	WrByte(myDev,0x01a6, 0x1b);
-	WrByte(myDev,0x01ac, 0x3e);
-	WrByte(myDev,0x01a7, 0x1f);
-	WrByte(myDev,0x0030, 0x00);
+	WrByte(0x0207, 0x01);
+	WrByte(0x0208, 0x01);
+	WrByte(0x0096, 0x00);
+	WrByte(0x0097, 0xfd);
+	WrByte(0x00e3, 0x00);
+	WrByte(0x00e4, 0x04);
+	WrByte(0x00e5, 0x02);
+	WrByte(0x00e6, 0x01);
+	WrByte(0x00e7, 0x03);
+	WrByte(0x00f5, 0x02);
+	WrByte(0x00d9, 0x05);
+	WrByte(0x00db, 0xce);
+	WrByte(0x00dc, 0x03);
+	WrByte(0x00dd, 0xf8);
+	WrByte(0x009f, 0x00);
+	WrByte(0x00a3, 0x3c);
+	WrByte(0x00b7, 0x00);
+	WrByte(0x00bb, 0x3c);
+	WrByte(0x00b2, 0x09);
+	WrByte(0x00ca, 0x09);
+	WrByte(0x0198, 0x01);
+	WrByte(0x01b0, 0x17);
+	WrByte(0x01ad, 0x00);
+	WrByte(0x00ff, 0x05);
+	WrByte(0x0100, 0x05);
+	WrByte(0x0199, 0x05);
+	WrByte(0x01a6, 0x1b);
+	WrByte(0x01ac, 0x3e);
+	WrByte(0x01a7, 0x1f);
+	WrByte(0x0030, 0x00);
 	// Recommended : Public registers - See data sheet for more detail
-	WrByte(myDev,0x0011, 0x10); // Enables polling for ‘New Sample ready’
+	WrByte(0x0011, 0x10); // Enables polling for ‘New Sample ready’
 	// when measurement completes
-	WrByte(myDev,0x010a, 0x30); // Set the averaging sample period
+	WrByte(0x010a, 0x30); // Set the averaging sample period
 	// (compromise between lower noise and
 	// increased execution time)
-	WrByte(myDev,0x003f, 0x46); // Sets the light and dark gain (upper
+	WrByte(0x003f, 0x46); // Sets the light and dark gain (upper
 	// nibble). Dark gain should not be
 	// changed.
-	WrByte(myDev,0x0031, 0xFF); // sets the # of range measurements after
+	WrByte(0x0031, 0xFF); // sets the # of range measurements after
 	// which auto calibration of system is
 	// performed
-	WrByte(myDev,0x0040, 0x63); // Set ALS integration time to 100ms
-	WrByte(myDev,0x002e, 0x01); // perform a single temperature calibration
+	WrByte(0x0040, 0x63); // Set ALS integration time to 100ms
+	WrByte(0x002e, 0x01); // perform a single temperature calibration
 	// of the ranging sensor
-	WrByte(myDev,0x001b, 0x09); // Set default ranging inter-measurement
+	WrByte(0x001b, 0x09); // Set default ranging inter-measurement
 	// period to 100ms
-	WrByte(myDev,0x003e, 0x31); // Set default ALS inter-measurement period
+	WrByte(0x003e, 0x31); // Set default ALS inter-measurement period
 	// to 500ms
-	WrByte(myDev,0x0014, 0x24); // Configures interrupt on ‘New Sample
+	WrByte(0x0014, 0x24); // Configures interrupt on ‘New Sample
 	// Ready threshold event’
 }
 
@@ -171,13 +171,14 @@ void adafruitPort()
 	MyDev_SetChipEnable(); //toggle GPIO0 to reset device
 
 	uint8_t reset, status, range_status, id, range;
-	uint8_t val;
 
 	//CHECK DEVICE ID
-	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)IDENTIFICATION_MODEL_ID, I2C_MEMADD_SIZE_16BIT, &id, 1, 10000);
-	//uprintf("id: %d\r\n", id);
+	RdByte(IDENTIFICATION_MODEL_ID, &id);
+	if(STATUS_DEBUG)
+		uprintf("id: %d\r\n", id);
 	if(id == 0xB4) {
-		//uprintf("--> Device recognized!\n\r");
+		if(STATUS_DEBUG)
+			uprintf("--> Device recognized!\n\r");
 	}
 	else {
 		uprintf("--> Device not recognized! Exiting...\n\r");
@@ -185,46 +186,49 @@ void adafruitPort()
 	}
 
 	//CHECK RESET
-	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, &reset, 1, 10000);
-	//uprintf("reset: %d\r\n", reset);
+	RdByte(SYSTEM_FRESH_OUT_OF_RESET, &reset);
+	if(STATUS_DEBUG)
+		uprintf("reset: %d\r\n", reset);
 
 	//LOAD A BUNCH OF SETTINGS ONTO DEVICE
 	LoadSettings();
-	//uprintf("settings loaded\r\n");
-	val = 0x00;
-	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 1, 10000);
+	if(STATUS_DEBUG)
+		uprintf("settings loaded\r\n");
+	WrByte(SYSTEM_FRESH_OUT_OF_RESET, 0x00);
 
 	//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
-	while (!( (range_status) & 0x01)){
-		HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_STATUS, I2C_MEMADD_SIZE_16BIT, &range_status, 1, 10000);
+	while (!((range_status) & 0x01)){
+		RdByte(RESULT_RANGE_STATUS, &range_status);
 	}
 
-	//uprintf("--> range status: %d\r\n", range_status);
+	if(STATUS_DEBUG)
+		uprintf("--> range status: %d\r\n", range_status);
 
 	// Start a range measurement
-	val = 0x01;
-	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSRANGE_START, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 1, 10000);
+	WrByte(SYSRANGE_START, 0x01);
 
-	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_INTERRUPT_STATUS_GPIO, I2C_MEMADD_SIZE_16BIT, &status, 1, 10000);
-	//uprintf("status: %d\r\n", status);
+	RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
+	if(STATUS_DEBUG)
+		uprintf("status: %d\r\n", status);
 
 	//WAIT TILL 2ND BIT OF RANGE STATUS IS SET
-	while (! ((status) & 0x04)){
-		  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_INTERRUPT_STATUS_GPIO, I2C_MEMADD_SIZE_16BIT, &status, 1, 10000);
+	while (!((status) & 0x04)){
+		RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
 	  }
-	  //uprintf("--> status: %d\r\n", status);
+	if(STATUS_DEBUG)
+		uprintf("--> status: %d\r\n", status);
 
-	  // read range in mm
-	  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_VAL, I2C_MEMADD_SIZE_16BIT, &range, 1, 10000);
-	  uprintf("range: %d\r\n", range);
+	// read range in mm
+	RdByte(RESULT_RANGE_VAL, &range);
+	uprintf("range: %d\r\n", range);
 
-	  // clear interrupt
-	  val = 0x07;
-	  HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSTEM_INTERRUPT_CLEAR, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 1, 10000);
+	// clear interrupt
+	WrByte(SYSTEM_INTERRUPT_CLEAR, 0x07);
 
-	  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_STATUS, I2C_MEMADD_SIZE_16BIT, &status, 1, 10000);
-	  status = status >> 4;
-	  //uprintf("status: %d\r\n", status);
+	RdByte(RESULT_RANGE_STATUS, &status);
+	status = status >> 4;
+	if(STATUS_DEBUG)
+		uprintf("status: %d\r\n", status);
 }
 
 void i2ctest()
@@ -233,22 +237,8 @@ void i2ctest()
 
 	uint8_t reset, status, range_status, id, range;
 
-	RdByte(myDev, IDENTIFICATION_MODEL_ID, &id, 1);
+	RdByte(IDENTIFICATION_MODEL_ID, &id);
 	uprintf("size 1: id: %d\r\n", id);
-
-	RdByte(myDev, IDENTIFICATION_MODEL_ID, &id, 2);
-	uprintf("size 2: id: %d\r\n", id);
-
-	/*RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &reset);
-	uprintf("reset: %d\r\n", reset);
-
-	uint8_t reset, status, range_status, id, range;
-
-	ReadBuffer(myDev, 0x000, &id, 1);
-	uprintf("id: %d\r\n", id);*/
-
-
-
 }
 
 
@@ -306,7 +296,6 @@ int main(void)
 
   }
 
-  //Sample_SimpleRanging();
   /* USER CODE END 3 */
 
 }
