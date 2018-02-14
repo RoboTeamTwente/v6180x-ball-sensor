@@ -45,7 +45,7 @@
 /* USER CODE BEGIN Includes */
 #include "PuttyInterface.h"
 #include "vl6180x_api.h"
-#define myDev   (0x29<<1)    // what we use as "API device
+#define myDev   (0x29<<1)
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -53,7 +53,7 @@
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 PuttyInterfaceTypeDef pitd;
-uint32_t range;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -96,7 +96,12 @@ void OnErrLog(void){
 
 void WrByte(uint8_t dev, uint16_t index, uint8_t data) {
 
-	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)index, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&data), 3, 100);
+	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)index, I2C_MEMADD_SIZE_16BIT, &data, 1, 10000);
+}
+
+void RdByte(uint8_t dev, uint16_t index, uint8_t* data) {
+
+	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)index, I2C_MEMADD_SIZE_16BIT, data, 1, 10000);
 }
 
 void LoadSettings() {
@@ -167,6 +172,7 @@ void adafruitPort()
 		uprintf("--> Device recognized!\n\r");
 	}
 	else {
+		uprintf("--> Device not recognized! Exiting...\n\r");
 		return;
 	}
 
@@ -174,24 +180,27 @@ void adafruitPort()
 	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, &reset, 2, 100);
 	uprintf("reset: %d\r\n", reset);
 
-	//LoadSettings();
+	//LOAD A BUNCH OF SETTINGS ONTO DEVICE
+	LoadSettings();
 	uprintf("settings loaded\r\n");
 	val = 0x00;
-	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 3, 100);
+	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 1, 100);
 
+	//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
 	while (!( (range_status) & 0x01)){
 		HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_STATUS, I2C_MEMADD_SIZE_16BIT, &range_status, 2, 100);
 	}
 
 	uprintf("--> range status: %d\r\n", range_status);
 
-	  // Start a range measurement
+	// Start a range measurement
 	val = 0x01;
-	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSRANGE_START, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 3, 100);
+	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSRANGE_START, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 1, 100);
 
 	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_INTERRUPT_STATUS_GPIO, I2C_MEMADD_SIZE_16BIT, &status, 2, 100);
 	uprintf("status: %d\r\n", status);
-	  // Poll until bit 2 is set
+
+	//WAIT TILL 2ND BIT OF RANGE STATUS IS SET
 	while (! ((status) & 0x04)){
 		  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_INTERRUPT_STATUS_GPIO, I2C_MEMADD_SIZE_16BIT, &status, 2, 100);
 	  }
@@ -202,7 +211,8 @@ void adafruitPort()
 	  uprintf("range: %d\r\n", range);
 
 	  // clear interrupt
-	  WrByte(myDev, SYSTEM_INTERRUPT_CLEAR, 0x07);
+	  val = 0x07;
+	  HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSTEM_INTERRUPT_CLEAR, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 1, 100);
 
 	  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_STATUS, I2C_MEMADD_SIZE_16BIT, &status, 2, 100);
 	  status = status >> 4;
@@ -211,18 +221,20 @@ void adafruitPort()
 
 void i2ctest()
 {
-/*	uint8_t reset, status, range_status, id, range;
+	uint8_t reset, status, range_status, id, range;
 
 	RdByte(myDev, IDENTIFICATION_MODEL_ID, &id);
 	uprintf("id: %d\r\n", id);
 
-	RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &reset);
-	uprintf("reset: %d\r\n", reset);*/
+	/*RdByte(myDev, SYSTEM_FRESH_OUT_OF_RESET, &reset);
+	uprintf("reset: %d\r\n", reset);
 
 	uint8_t reset, status, range_status, id, range;
 
 	ReadBuffer(myDev, 0x000, &id, 1);
-	uprintf("id: %d\r\n", id);
+	uprintf("id: %d\r\n", id);*/
+
+
 
 }
 
