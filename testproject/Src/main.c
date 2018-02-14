@@ -72,15 +72,15 @@ void MyDev_SetChipEnable() {
 	//Set GPIO0 to 1
 	//Wait for a minimum of 400μs
 
-	uprintf("Starting chip enable\n\r");
+	//uprintf("Starting chip enable\n\r");
 	HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)0);
 	HAL_Delay(10);
     HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)1);
     HAL_Delay(1);
     /* Note that as we waited  1msec we could bypass VL6180x_WaitDeviceBooted(); */
-    uprintf("Waiting for device to boot\n\r");
+    //uprintf("Waiting for device to boot\n\r");
     //VL6180x_WaitDeviceBooted(myDev);
-    uprintf("Device booted\n\r");
+    //uprintf("Device booted\n\r");
 }
 
 
@@ -174,10 +174,10 @@ void adafruitPort()
 	uint8_t val;
 
 	//CHECK DEVICE ID
-	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)IDENTIFICATION_MODEL_ID, I2C_MEMADD_SIZE_16BIT, &id, 2, 100);
-	uprintf("id: %d\r\n", id);
+	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)IDENTIFICATION_MODEL_ID, I2C_MEMADD_SIZE_16BIT, &id, 1, 10000);
+	//uprintf("id: %d\r\n", id);
 	if(id == 0xB4) {
-		uprintf("--> Device recognized!\n\r");
+		//uprintf("--> Device recognized!\n\r");
 	}
 	else {
 		uprintf("--> Device not recognized! Exiting...\n\r");
@@ -185,46 +185,46 @@ void adafruitPort()
 	}
 
 	//CHECK RESET
-	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, &reset, 2, 100);
-	uprintf("reset: %d\r\n", reset);
+	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, &reset, 1, 10000);
+	//uprintf("reset: %d\r\n", reset);
 
 	//LOAD A BUNCH OF SETTINGS ONTO DEVICE
 	LoadSettings();
-	uprintf("settings loaded\r\n");
+	//uprintf("settings loaded\r\n");
 	val = 0x00;
-	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 1, 100);
+	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSTEM_FRESH_OUT_OF_RESET, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 1, 10000);
 
 	//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
 	while (!( (range_status) & 0x01)){
-		HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_STATUS, I2C_MEMADD_SIZE_16BIT, &range_status, 2, 100);
+		HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_STATUS, I2C_MEMADD_SIZE_16BIT, &range_status, 1, 10000);
 	}
 
-	uprintf("--> range status: %d\r\n", range_status);
+	//uprintf("--> range status: %d\r\n", range_status);
 
 	// Start a range measurement
 	val = 0x01;
-	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSRANGE_START, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 1, 100);
+	HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSRANGE_START, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 1, 10000);
 
-	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_INTERRUPT_STATUS_GPIO, I2C_MEMADD_SIZE_16BIT, &status, 2, 100);
-	uprintf("status: %d\r\n", status);
+	HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_INTERRUPT_STATUS_GPIO, I2C_MEMADD_SIZE_16BIT, &status, 1, 10000);
+	//uprintf("status: %d\r\n", status);
 
 	//WAIT TILL 2ND BIT OF RANGE STATUS IS SET
 	while (! ((status) & 0x04)){
-		  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_INTERRUPT_STATUS_GPIO, I2C_MEMADD_SIZE_16BIT, &status, 2, 100);
+		  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_INTERRUPT_STATUS_GPIO, I2C_MEMADD_SIZE_16BIT, &status, 1, 10000);
 	  }
-	  uprintf("--> status: %d\r\n", status);
+	  //uprintf("--> status: %d\r\n", status);
 
 	  // read range in mm
-	  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_VAL, I2C_MEMADD_SIZE_16BIT, &range, 2, 100);
+	  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_VAL, I2C_MEMADD_SIZE_16BIT, &range, 1, 10000);
 	  uprintf("range: %d\r\n", range);
 
 	  // clear interrupt
 	  val = 0x07;
-	  HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSTEM_INTERRUPT_CLEAR, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 1, 100);
+	  HAL_I2C_Mem_Write(&hi2c1, myDev, (uint16_t)SYSTEM_INTERRUPT_CLEAR, I2C_MEMADD_SIZE_16BIT, (uint8_t*)(&val), 1, 10000);
 
-	  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_STATUS, I2C_MEMADD_SIZE_16BIT, &status, 2, 100);
+	  HAL_I2C_Mem_Read(&hi2c1, myDev, (uint16_t)RESULT_RANGE_STATUS, I2C_MEMADD_SIZE_16BIT, &status, 1, 10000);
 	  status = status >> 4;
-	  uprintf("status: %d\r\n", status);
+	  //uprintf("status: %d\r\n", status);
 }
 
 void i2ctest()
@@ -254,7 +254,7 @@ void i2ctest()
 
 /* USER CODE END 0 */
 
-/**
+/**3
   * @brief  The application entry point.
   *
   * @retval None
@@ -301,8 +301,8 @@ int main(void)
    /* USER CODE BEGIN 3 */
 	  //PuttyInterface_Update(&pitd);
 	  HAL_Delay(1);
-  	  //adafruitPort();
-	  i2ctest();
+  	  adafruitPort();
+	  //i2ctest();
 
   }
 
