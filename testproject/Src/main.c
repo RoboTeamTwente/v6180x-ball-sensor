@@ -56,6 +56,8 @@ PuttyInterfaceTypeDef pitd;
 char STATUS_DEBUG = 0;
 char SINGLE_SHOT = 0;
 
+uint8_t range;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -167,11 +169,10 @@ void LoadSettings() {
 	// Ready threshold event’
 }
 
-void adafruitPort()
-{
+void initializeDevice() {
 	MyDev_SetChipEnable(); //toggle GPIO0 to reset device
 
-	uint8_t reset, status, range_status, id, range;
+	uint8_t reset, id;
 
 	//CHECK DEVICE ID
 	RdByte(IDENTIFICATION_MODEL_ID, &id);
@@ -195,7 +196,16 @@ void adafruitPort()
 	LoadSettings();
 	if(STATUS_DEBUG)
 		uprintf("settings loaded\r\n");
+
+	//UNSET FRESH OUT OF RESET
 	WrByte(SYSTEM_FRESH_OUT_OF_RESET, 0x00);
+}
+
+void measureRange()
+{
+	initializeDevice();
+
+	uint8_t status, range_status;
 
 	if(SINGLE_SHOT) {
 		//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
@@ -272,10 +282,10 @@ void i2ctest()
 {
 	MyDev_SetChipEnable();
 
-	uint8_t reset, status, range_status, id, range;
+	uint8_t id;
 
 	RdByte(IDENTIFICATION_MODEL_ID, &id);
-	uprintf("size 1: id: %d\r\n", id);
+	uprintf("id: %d\r\n", id);
 }
 
 
@@ -320,7 +330,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  //HAL_GPIO_WritePin(CHIP_ENABLE_GPIO_Port, CHIP_ENABLE_Pin , (GPIO_PinState)1);
+
   while (1)
   {
    /* USER CODE END WHILE */
@@ -328,7 +338,7 @@ int main(void)
    /* USER CODE BEGIN 3 */
 	  //PuttyInterface_Update(&pitd);
 	  HAL_Delay(1);
-  	  adafruitPort();
+  	  measureRange();
 	  //i2ctest();
 
   }
