@@ -53,7 +53,8 @@
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 PuttyInterfaceTypeDef pitd;
-char STATUS_DEBUG;
+char STATUS_DEBUG = 0;
+char SINGLE_SHOT = 0;
 
 /* USER CODE END PV */
 
@@ -196,39 +197,75 @@ void adafruitPort()
 		uprintf("settings loaded\r\n");
 	WrByte(SYSTEM_FRESH_OUT_OF_RESET, 0x00);
 
-	//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
-	while (!((range_status) & 0x01)){
-		RdByte(RESULT_RANGE_STATUS, &range_status);
-	}
+	if(SINGLE_SHOT) {
+		//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
+		while (!((range_status) & 0x01)){
+			RdByte(RESULT_RANGE_STATUS, &range_status);
+		}
 
-	if(STATUS_DEBUG)
-		uprintf("--> range status: %d\r\n", range_status);
+		if(STATUS_DEBUG)
+			uprintf("--> range status: %d\r\n", range_status);
 
-	// Start a range measurement
-	WrByte(SYSRANGE_START, 0x01);
+		// Start a range measurement
+		WrByte(SYSRANGE_START, 0x01);
 
-	RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
-	if(STATUS_DEBUG)
-		uprintf("status: %d\r\n", status);
-
-	//WAIT TILL 2ND BIT OF RANGE STATUS IS SET
-	while (!((status) & 0x04)){
 		RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
-	  }
-	if(STATUS_DEBUG)
-		uprintf("--> status: %d\r\n", status);
+		if(STATUS_DEBUG)
+			uprintf("status: %d\r\n", status);
 
-	// read range in mm
-	RdByte(RESULT_RANGE_VAL, &range);
-	uprintf("range: %d\r\n", range);
+		//WAIT TILL 2ND BIT OF RANGE STATUS IS SET
+		while (!((status) & 0x04)){
+			RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
+		  }
+		if(STATUS_DEBUG)
+			uprintf("--> status: %d\r\n", status);
 
-	// clear interrupt
-	WrByte(SYSTEM_INTERRUPT_CLEAR, 0x07);
+		// read range in mm
+		RdByte(RESULT_RANGE_VAL, &range);
+		uprintf("range: %d\r\n", range);
 
-	RdByte(RESULT_RANGE_STATUS, &status);
-	status = status >> 4;
-	if(STATUS_DEBUG)
-		uprintf("status: %d\r\n", status);
+		// clear interrupt
+		WrByte(SYSTEM_INTERRUPT_CLEAR, 0x07);
+
+		RdByte(RESULT_RANGE_STATUS, &status);
+		status = status >> 4;
+		if(STATUS_DEBUG)
+			uprintf("status: %d\r\n", status);
+	}
+	else {
+		for(uint8_t i=0; i<100; i++) {
+			//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
+			while (!((range_status) & 0x01)){
+				RdByte(RESULT_RANGE_STATUS, &range_status);
+			}
+
+			if(STATUS_DEBUG)
+				uprintf("--> range status: %d\r\n", range_status);
+
+			// Start a range measurement
+			WrByte(SYSRANGE_START, 0x03);
+
+			RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
+			if(STATUS_DEBUG)
+				uprintf("status: %d\r\n", status);
+
+			//WAIT TILL 2ND BIT OF RANGE STATUS IS SET
+			while (!((status) & 0x04)){
+				RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
+			  }
+			if(STATUS_DEBUG)
+				uprintf("--> status: %d\r\n", status);
+
+			// read range in mm
+			RdByte(RESULT_RANGE_VAL, &range);
+			uprintf("%d - range: %d\r\n", i, range);
+
+
+		}
+		// clear interrupt
+		WrByte(SYSTEM_INTERRUPT_CLEAR, 0x07);
+		WrByte(SYSRANGE_START, 0x01);
+	}
 }
 
 void i2ctest()
