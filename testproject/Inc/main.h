@@ -54,6 +54,8 @@
 #define LD2_GPIO_Port GPIOA
 #define CHIP_ENABLE_Pin GPIO_PIN_9
 #define CHIP_ENABLE_GPIO_Port GPIOA
+#define INTERRUPT_Pin GPIO_PIN_4
+#define INTERRUPT_GPIO_Port GPIOB
 
 /* ########################## Assert Selection ############################## */
 /**

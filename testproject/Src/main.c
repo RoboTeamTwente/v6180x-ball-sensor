@@ -5,7 +5,7 @@
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether
+  * USER CODE END. Other portions of this file, whether 
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
@@ -161,11 +161,11 @@ void LoadSettings() {
 	WrByte(0x0040, 0x63); // Set ALS integration time to 100ms
 	WrByte(0x002e, 0x01); // perform a single temperature calibration
 	// of the ranging sensor
-	WrByte(0x001b, 0x09); // Set default ranging inter-measurement
-	// period to 100ms
+	WrByte(SYSRANGE_INTERMEASUREMENT_PERIOD, 0); // Set default ranging inter-measurement
+	// period to 10ms
 	WrByte(0x003e, 0x31); // Set default ALS inter-measurement period
 	// to 500ms
-	WrByte(0x0014, 0x24); // Configures interrupt on ‘New Sample
+	WrByte(SYSTEM_INTERRUPT_CONFIG_GPIO, 0x24); // Configures interrupt on ‘New Sample
 	// Ready threshold event’
 }
 
@@ -207,7 +207,7 @@ void measureRange()
 
 	uint8_t status, range_status;
 
-	if(SINGLE_SHOT) {
+	while(1) {
 		//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
 		while (!((range_status) & 0x01)){
 			RdByte(RESULT_RANGE_STATUS, &range_status);
@@ -242,40 +242,7 @@ void measureRange()
 		if(STATUS_DEBUG)
 			uprintf("status: %d\r\n", status);
 	}
-	else {
-		for(uint8_t i=0; i<100; i++) {
-			//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
-			while (!((range_status) & 0x01)){
-				RdByte(RESULT_RANGE_STATUS, &range_status);
-			}
 
-			if(STATUS_DEBUG)
-				uprintf("--> range status: %d\r\n", range_status);
-
-			// Start a range measurement
-			WrByte(SYSRANGE_START, 0x03);
-
-			RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
-			if(STATUS_DEBUG)
-				uprintf("status: %d\r\n", status);
-
-			//WAIT TILL 2ND BIT OF RANGE STATUS IS SET
-			while (!((status) & 0x04)){
-				RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
-			  }
-			if(STATUS_DEBUG)
-				uprintf("--> status: %d\r\n", status);
-
-			// read range in mm
-			RdByte(RESULT_RANGE_VAL, &range);
-			uprintf("%d - range: %d\r\n", i, range);
-
-
-		}
-		// clear interrupt
-		WrByte(SYSTEM_INTERRUPT_CLEAR, 0x07);
-		WrByte(SYSRANGE_START, 0x01);
-	}
 }
 
 void i2ctest()
@@ -291,7 +258,7 @@ void i2ctest()
 
 /* USER CODE END 0 */
 
-/**3
+/**
   * @brief  The application entry point.
   *
   * @retval None
@@ -333,9 +300,9 @@ int main(void)
 
   while (1)
   {
-   /* USER CODE END WHILE */
+  /* USER CODE END WHILE */
 
-   /* USER CODE BEGIN 3 */
+  /* USER CODE BEGIN 3 */
 	  //PuttyInterface_Update(&pitd);
 	  HAL_Delay(1);
   	  measureRange();
@@ -357,13 +324,13 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-    /**Configure the main internal regulator output voltage
+    /**Configure the main internal regulator output voltage 
     */
   __HAL_RCC_PWR_CLK_ENABLE();
 
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
 
-    /**Initializes the CPU, AHB and APB busses clocks
+    /**Initializes the CPU, AHB and APB busses clocks 
     */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -374,7 +341,7 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Initializes the CPU, AHB and APB busses clocks
+    /**Initializes the CPU, AHB and APB busses clocks 
     */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -388,11 +355,11 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure the Systick interrupt time
+    /**Configure the Systick interrupt time 
     */
   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
-    /**Configure the Systick
+    /**Configure the Systick 
     */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
@@ -429,7 +396,7 @@ void _Error_Handler(char *file, int line)
   * @retval None
   */
 void assert_failed(uint8_t* file, uint32_t line)
-{
+{ 
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
