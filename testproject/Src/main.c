@@ -53,7 +53,7 @@
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 PuttyInterfaceTypeDef pitd;
-char STATUS_DEBUG = 0;
+char STATUS_DEBUG = 1;
 char SINGLE_SHOT = 0;
 
 uint8_t range;
@@ -147,7 +147,8 @@ void LoadSettings() {
 	WrByte(0x01a7, 0x1f);
 	WrByte(0x0030, 0x00);
 	// Recommended : Public registers - See data sheet for more detail
-	WrByte(0x0011, 0x10); // Enables polling for ‘New Sample ready’
+	WrByte(SYSTEM_MODE_GPIO1,0x30);
+	//WrByte(0x0011, 0x10); // Enables polling for ‘New Sample ready’
 	// when measurement completes
 	WrByte(0x010a, 0x30); // Set the averaging sample period
 	// (compromise between lower noise and
@@ -161,12 +162,15 @@ void LoadSettings() {
 	WrByte(0x0040, 0x63); // Set ALS integration time to 100ms
 	WrByte(0x002e, 0x01); // perform a single temperature calibration
 	// of the ranging sensor
-	WrByte(SYSRANGE_INTERMEASUREMENT_PERIOD, 0); // Set default ranging inter-measurement
+	WrByte(SYSRANGE_INTERMEASUREMENT_PERIOD, 0x09); // Set default ranging inter-measurement
 	// period to 10ms
 	WrByte(0x003e, 0x31); // Set default ALS inter-measurement period
 	// to 500ms
+	//WrByte(SYSTEM_MODE_GPIO1,0x08); //set GPIO1 to interrupt output, active high
+	//WrByte(SYSTEM_MODE_GPIO1,0x10); //set GPIO1 to interrupt output, active high
 	WrByte(SYSTEM_INTERRUPT_CONFIG_GPIO, 0x24); // Configures interrupt on ‘New Sample
 	// Ready threshold event’
+
 }
 
 void initializeDevice() {
@@ -197,6 +201,7 @@ void initializeDevice() {
 	if(STATUS_DEBUG)
 		uprintf("settings loaded\r\n");
 
+
 	//UNSET FRESH OUT OF RESET
 	WrByte(SYSTEM_FRESH_OUT_OF_RESET, 0x00);
 }
@@ -207,41 +212,17 @@ void measureRange()
 
 	uint8_t status, range_status;
 
-	while(1) {
-		//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
-		while (!((range_status) & 0x01)){
-			RdByte(RESULT_RANGE_STATUS, &range_status);
-		}
+	// Start a range measurement
+	while (!((range_status) & 0x01)){
+				RdByte(RESULT_RANGE_STATUS, &range_status);
+			}
 
-		if(STATUS_DEBUG)
-			uprintf("--> range status: %d\r\n", range_status);
+	if(STATUS_DEBUG)
+				uprintf("--> range status: %d\r\n", range_status);
 
-		// Start a range measurement
-		WrByte(SYSRANGE_START, 0x01);
-
-		RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
-		if(STATUS_DEBUG)
-			uprintf("status: %d\r\n", status);
-
-		//WAIT TILL 2ND BIT OF RANGE STATUS IS SET
-		while (!((status) & 0x04)){
-			RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
-		  }
-		if(STATUS_DEBUG)
-			uprintf("--> status: %d\r\n", status);
-
-		// read range in mm
-		RdByte(RESULT_RANGE_VAL, &range);
-		uprintf("range: %d\r\n", range);
-
-		// clear interrupt
-		WrByte(SYSTEM_INTERRUPT_CLEAR, 0x07);
-
-		RdByte(RESULT_RANGE_STATUS, &status);
-		status = status >> 4;
-		if(STATUS_DEBUG)
-			uprintf("status: %d\r\n", status);
-	}
+	// Start a range measurement
+	//WrByte(SYSRANGE_START, 0x01);
+	WrByte(SYSRANGE_START, 0x03);
 
 }
 
@@ -298,17 +279,15 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-  while (1)
-  {
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
 	  //PuttyInterface_Update(&pitd);
 	  HAL_Delay(1);
   	  measureRange();
-	  //i2ctest();
+	  while(1){
 
-  }
+	  }
 
   /* USER CODE END 3 */
 
