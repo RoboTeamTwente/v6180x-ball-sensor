@@ -85,7 +85,7 @@ void LoadSettings() {
 	WrByte(0x0040, 0x63); // Set ALS integration time to 100ms
 	WrByte(0x002e, 0x01); // perform a single temperature calibration
 	// of the ranging sensor
-	WrByte(SYSRANGE_INTERMEASUREMENT_PERIOD, 0x09); // Set default ranging inter-measurement
+	WrByte(SYSRANGE_INTERMEASUREMENT_PERIOD, 0x00); // Set default ranging inter-measurement
 	// period to 10ms
 	WrByte(0x003e, 0x31); // Set default ALS inter-measurement period
 	// to 500ms
