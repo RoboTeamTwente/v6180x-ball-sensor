@@ -9,8 +9,10 @@
 #define ALS_NEWSAMPLE_RANGE_LOWTHRESH 0x21
 #define ALS_NEWSAMPLE_RANGE_NEWSAMPLE 0x24
 
+#define SINGLE_SHOT 1
+#define CONTINUOUS 1
+
 char STATUS_DEBUG;
-char SINGLE_SHOT;
 
 uint8_t range;
 
@@ -24,4 +26,5 @@ void LoadSettings();
 
 void initializeDevice();
 
-void measureRange();
+void measureRange_Interrupts();
+void measureRange_Polling(uint8_t mode);

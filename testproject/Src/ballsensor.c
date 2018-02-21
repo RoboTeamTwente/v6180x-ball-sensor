@@ -1,7 +1,6 @@
 #include "ballsensor.h"
 
 char STATUS_DEBUG = 1;
-char SINGLE_SHOT = 0;
 
 void MyDev_SetChipEnable() {
 	//STARTUP SEQUENCE:
@@ -86,8 +85,6 @@ void LoadPrivateSettings() {
 	WrByte(0x01ac, 0x3e);
 	WrByte(0x01a7, 0x1f);
 	WrByte(0x0030, 0x00);
-
-
 }
 
 void initializeDevice() {
@@ -119,12 +116,11 @@ void initializeDevice() {
 	if(STATUS_DEBUG)
 		uprintf("settings loaded\r\n");
 
-
 	//UNSET FRESH OUT OF RESET
 	WrByte(SYSTEM_FRESH_OUT_OF_RESET, 0x00);
 }
 
-void measureRange()
+void measureRange_Interrupts()
 {
 	initializeDevice();
 
@@ -139,9 +135,86 @@ void measureRange()
 				uprintf("--> range status: %d\r\n", range_status);
 
 	// Start a range measurement
-	//WrByte(SYSRANGE_START, 0x01);
 	WrByte(SYSRANGE_START, 0x03);
 
 }
+
+void measureRange_Polling(uint8_t mode)
+{
+	initializeDevice();
+
+	uint8_t status, range_status;
+
+	if(mode == SINGLE_SHOT) {
+		//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
+		while (!((range_status) & 0x01)){
+			RdByte(RESULT_RANGE_STATUS, &range_status);
+		}
+
+		if(STATUS_DEBUG)
+			uprintf("--> range status: %d\r\n", range_status);
+
+		// Start a range measurement
+		WrByte(SYSRANGE_START, 0x01);
+
+		RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
+		if(STATUS_DEBUG)
+			uprintf("status: %d\r\n", status);
+
+		//WAIT TILL 2ND BIT OF RANGE STATUS IS SET
+		while (!((status) & 0x04)){
+			RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
+		  }
+		if(STATUS_DEBUG)
+			uprintf("--> status: %d\r\n", status);
+
+		// read range in mm
+		RdByte(RESULT_RANGE_VAL, &range);
+		uprintf("range: %d\r\n", range);
+
+		// clear interrupt
+		WrByte(SYSTEM_INTERRUPT_CLEAR, 0x07);
+
+		RdByte(RESULT_RANGE_STATUS, &status);
+		status = status >> 4;
+		if(STATUS_DEBUG)
+			uprintf("status: %d\r\n", status);
+	}
+	else {
+		for(uint8_t i=0; i<100; i++) {
+			//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
+			while (!((range_status) & 0x01)){
+				RdByte(RESULT_RANGE_STATUS, &range_status);
+			}
+
+			if(STATUS_DEBUG)
+				uprintf("--> range status: %d\r\n", range_status);
+
+			// Start a range measurement
+			WrByte(SYSRANGE_START, 0x03);
+
+			RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
+			if(STATUS_DEBUG)
+				uprintf("status: %d\r\n", status);
+
+			//WAIT TILL 2ND BIT OF RANGE STATUS IS SET
+			while (!((status) & 0x04)){
+				RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
+			  }
+			if(STATUS_DEBUG)
+				uprintf("--> status: %d\r\n", status);
+
+			// read range in mm
+			RdByte(RESULT_RANGE_VAL, &range);
+			uprintf("%d - range: %d\r\n", i, range);
+
+
+		}
+		// clear interrupt
+		WrByte(SYSTEM_INTERRUPT_CLEAR, 0x07);
+		WrByte(SYSRANGE_START, 0x01);
+	}
+}
+
 
 

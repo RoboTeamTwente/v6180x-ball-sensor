@@ -119,8 +119,7 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 	  //PuttyInterface_Update(&pitd);
-	  HAL_Delay(1);
-  	  measureRange();
+  	  measureRange_Interrupts();
 	  while(1){
 
 	  }
