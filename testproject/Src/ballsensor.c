@@ -41,26 +41,17 @@ void RdByte(uint16_t index, uint8_t* data) {
 void LoadCustomSettings() {
 	// Recommended : Public registers - See data sheet for more detail
 		WrByte(SYSTEM_MODE_GPIO1,0x30); //set GPIO1 to interrupt output, active high
-		//WrByte(0x0011, 0x10); // Enables polling for ‘New Sample ready’
-		// when measurement completes
-		WrByte(0x010a, 0x30); // Set the averaging sample period
-		// (compromise between lower noise and
-		// increased execution time)
-		WrByte(0x003f, 0x46); // Sets the light and dark gain (upper
-		// nibble). Dark gain should not be
-		// changed.
-		WrByte(0x0031, 0xFF); // sets the # of range measurements after
-		// which auto calibration of system is
-		// performed
+		//WrByte(0x0011, 0x10); // Enables polling for ‘New Sample ready’ when measurement completes
+		WrByte(0x010a, 0x30); // Set the averaging sample period (compromise between lower noise and increased execution time
+		WrByte(0x003f, 0x46); // Sets the light and dark gain (upper nibble). Dark gain should not be changed.
+		WrByte(0x0031, 0xFF); // sets the # of range measurements after which auto calibration of system is performed
 		WrByte(0x0040, 0x63); // Set ALS integration time to 100ms
-		WrByte(0x002e, 0x01); // perform a single temperature calibration
-		// of the ranging sensor
-		WrByte(SYSRANGE_INTERMEASUREMENT_PERIOD, 0x00); // Set default ranging inter-measurement
-		// period to 10ms
-		WrByte(0x003e, 0x31); // Set default ALS inter-measurement period
-		// to 500ms
-		WrByte(SYSTEM_INTERRUPT_CONFIG_GPIO, 0x24); // Configures interrupt on ‘New Sample
-		// Ready threshold event’
+		WrByte(0x002e, 0x01); // perform a single temperature calibration of the ranging sensor
+		WrByte(SYSRANGE_INTERMEASUREMENT_PERIOD, 0x00); // Set default ranging inter-measurement period to 10ms
+		WrByte(0x003e, 0x31); // Set default ALS inter-measurement period to 500ms
+		WrByte(SYSRANGE_THRESH_LOW,100); //10 cm threshold
+		//WrByte(SYSTEM_INTERRUPT_CONFIG_GPIO, ALS_NEWSAMPLE_RANGE_NEWSAMPLE); // Configures interrupt on ‘New Sample Ready threshold event’
+		WrByte(SYSTEM_INTERRUPT_CONFIG_GPIO, ALS_NEWSAMPLE_RANGE_LOWTHRESH); // low threshold
 }
 
 void LoadPrivateSettings() {
@@ -123,8 +114,8 @@ void initializeDevice() {
 		uprintf("reset: %d\r\n", reset);
 
 	//LOAD A BUNCH OF SETTINGS ONTO DEVICE
-	LoadPublicSettings();
 	LoadPrivateSettings();
+	LoadCustomSettings();
 	if(STATUS_DEBUG)
 		uprintf("settings loaded\r\n");
 

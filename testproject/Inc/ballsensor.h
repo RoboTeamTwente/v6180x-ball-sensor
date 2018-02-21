@@ -6,6 +6,8 @@
 #include "PuttyInterface.h"
 
 #define myDev   (0x29<<1)
+#define ALS_NEWSAMPLE_RANGE_LOWTHRESH 0x21
+#define ALS_NEWSAMPLE_RANGE_NEWSAMPLE 0x24
 
 char STATUS_DEBUG;
 char SINGLE_SHOT;
