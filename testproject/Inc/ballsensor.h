@@ -13,6 +13,7 @@
 #define CONTINUOUS 1
 
 char STATUS_DEBUG;
+char USING_INTERRUPTS;
 
 uint8_t range;
 

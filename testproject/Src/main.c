@@ -119,9 +119,9 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 	  //PuttyInterface_Update(&pitd);
-  	  measureRange_Interrupts();
-	  while(1){
 
+	  while(1){
+		  measureRange_Polling(CONTINUOUS);
 	  }
 
   /* USER CODE END 3 */

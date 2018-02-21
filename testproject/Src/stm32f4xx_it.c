@@ -199,11 +199,12 @@ void SysTick_Handler(void)
 void EXTI9_5_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI9_5_IRQn 0 */
-	//uprintf("test1\r\n");
-	// read range in mm
-	RdByte(RESULT_RANGE_VAL, &range);
-	uprintf("range: %d\r\n", range);
-	WrByte(SYSTEM_INTERRUPT_CLEAR, 0x07);
+	if(USING_INTERRUPTS) {
+		// read range in mm
+		RdByte(RESULT_RANGE_VAL, &range);
+		uprintf("range: %d\r\n", range);
+		WrByte(SYSTEM_INTERRUPT_CLEAR, 0x07);
+	}
   /* USER CODE END EXTI9_5_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */

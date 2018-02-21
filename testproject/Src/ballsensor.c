@@ -1,6 +1,7 @@
 #include "ballsensor.h"
 
-char STATUS_DEBUG = 1;
+char STATUS_DEBUG = 0;
+char USING_INTERRUPTS = 0;
 
 void MyDev_SetChipEnable() {
 	//STARTUP SEQUENCE:
@@ -37,7 +38,7 @@ void RdByte(uint16_t index, uint8_t* data) {
 	}
 }
 
-void LoadCustomSettings() {
+void LoadCustomSettings_Interrupts() {
 	// Recommended : Public registers - See data sheet for more detail
 		WrByte(SYSTEM_MODE_GPIO1,0x30); //set GPIO1 to interrupt output, active high
 		//WrByte(0x0011, 0x10); // Enables polling for ‘New Sample ready’ when measurement completes
@@ -51,6 +52,30 @@ void LoadCustomSettings() {
 		WrByte(SYSRANGE_THRESH_LOW,100); //10 cm threshold
 		//WrByte(SYSTEM_INTERRUPT_CONFIG_GPIO, ALS_NEWSAMPLE_RANGE_NEWSAMPLE); // Configures interrupt on ‘New Sample Ready threshold event’
 		WrByte(SYSTEM_INTERRUPT_CONFIG_GPIO, ALS_NEWSAMPLE_RANGE_LOWTHRESH); // low threshold
+}
+
+void LoadCustomSettings_Polling() {
+	// Recommended : Public registers - See data sheet for more detail
+		WrByte(0x0011, 0x10); // Enables polling for ‘New Sample ready’
+		// when measurement completes
+		WrByte(0x010a, 0x30); // Set the averaging sample period
+		// (compromise between lower noise and
+		// increased execution time)
+		WrByte(0x003f, 0x46); // Sets the light and dark gain (upper
+		// nibble). Dark gain should not be
+		// changed.
+		WrByte(0x0031, 0xFF); // sets the # of range measurements after
+		// which auto calibration of system is
+		// performed
+		WrByte(0x0040, 0x63); // Set ALS integration time to 100ms
+		WrByte(0x002e, 0x01); // perform a single temperature calibration
+		// of the ranging sensor
+		WrByte(0x001b, 0x09); // Set default ranging inter-measurement
+		// period to 100ms
+		WrByte(0x003e, 0x31); // Set default ALS inter-measurement period
+		// to 500ms
+		WrByte(0x0014, 0x24); // Configures interrupt on ‘New Sample
+	// Ready threshold event’
 }
 
 void LoadPrivateSettings() {
@@ -112,7 +137,10 @@ void initializeDevice() {
 
 	//LOAD A BUNCH OF SETTINGS ONTO DEVICE
 	LoadPrivateSettings();
-	LoadCustomSettings();
+	if(USING_INTERRUPTS)
+		LoadCustomSettings_Interrupts();
+	else
+		LoadCustomSettings_Polling();
 	if(STATUS_DEBUG)
 		uprintf("settings loaded\r\n");
 
@@ -122,6 +150,7 @@ void initializeDevice() {
 
 void measureRange_Interrupts()
 {
+	USING_INTERRUPTS = 1;
 	initializeDevice();
 
 	uint8_t range_status;
@@ -141,6 +170,7 @@ void measureRange_Interrupts()
 
 void measureRange_Polling(uint8_t mode)
 {
+	USING_INTERRUPTS = 0;
 	initializeDevice();
 
 	uint8_t status, range_status;
@@ -181,35 +211,33 @@ void measureRange_Polling(uint8_t mode)
 			uprintf("status: %d\r\n", status);
 	}
 	else {
-		for(uint8_t i=0; i<100; i++) {
-			//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
-			while (!((range_status) & 0x01)){
-				RdByte(RESULT_RANGE_STATUS, &range_status);
-			}
+			for(uint8_t i=0; i<100; i++) {
+				//WAIT TILL 1ST BIT OF RANGE STATUS IS SET
+				while (!((range_status) & 0x01)){
+					RdByte(RESULT_RANGE_STATUS, &range_status);
+				}
 
-			if(STATUS_DEBUG)
-				uprintf("--> range status: %d\r\n", range_status);
+				if(STATUS_DEBUG)
+					uprintf("--> range status: %d\r\n", range_status);
 
-			// Start a range measurement
-			WrByte(SYSRANGE_START, 0x03);
+				// Start a range measurement
+				WrByte(SYSRANGE_START, 0x03);
 
-			RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
-			if(STATUS_DEBUG)
-				uprintf("status: %d\r\n", status);
-
-			//WAIT TILL 2ND BIT OF RANGE STATUS IS SET
-			while (!((status) & 0x04)){
 				RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
-			  }
-			if(STATUS_DEBUG)
-				uprintf("--> status: %d\r\n", status);
+				if(STATUS_DEBUG)
+					uprintf("status: %d\r\n", status);
 
-			// read range in mm
-			RdByte(RESULT_RANGE_VAL, &range);
-			uprintf("%d - range: %d\r\n", i, range);
+				//WAIT TILL 2ND BIT OF RANGE STATUS IS SET
+				while (!((status) & 0x04)){
+					RdByte(RESULT_INTERRUPT_STATUS_GPIO, &status);
+				  }
+				if(STATUS_DEBUG)
+					uprintf("--> status: %d\r\n", status);
 
-
-		}
+				// read range in mm
+				RdByte(RESULT_RANGE_VAL, &range);
+				uprintf("%d - range: %d\r\n", i, range);
+			}
 		// clear interrupt
 		WrByte(SYSTEM_INTERRUPT_CLEAR, 0x07);
 		WrByte(SYSRANGE_START, 0x01);
